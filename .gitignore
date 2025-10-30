@@ -1,0 +1,25 @@
+# Ficheiro: .gitignore
+
+# ----- Segurança -----
+# Ignora todos os ficheiros .bat (que contêm as tuas senhas!)
+*.bat
+
+# Ignora a base de dados principal e backups
+*.db
+*.sqlite
+*.sqlite3
+*.db.uploadtmp
+
+# Ignora ambientes virtuais
+venv/
+.venv/
+env/
+
+# ----- Ficheiros de Cache e Lixo -----
+__pycache__/
+*.pyc
+*.py.bak
+
+# Ignora ficheiros de configuração de IDEs (ex: VS Code)
+.vscode/
+.idea/

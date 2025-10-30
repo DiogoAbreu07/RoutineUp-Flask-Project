@@ -1,0 +1,17 @@
+﻿{% extends "base.html" %}
+{% block title %}Editar Tarefa · RoutineUp{% endblock %}
+{% block content %}
+<div class="page">
+<h1 class="page-title">Editar Tarefa</h1>
+  {% set submit_label = "Atualizar" %}
+  {# A variável 'task' já está definida pela rota Flask #}
+  {# Define form_action ANTES do include #}
+  {% set form_action = url_for('tasks.edit', task_id=task.id) %}
+
+  {# Include SIMPLES #}
+  {% include "tasks/_form.html" %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+{% endblock %}

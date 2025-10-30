@@ -1,0 +1,341 @@
+﻿{% extends "base.html" %}
+{% block title %}Dashboard · RoutineUp{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+  
+  <!-- Header com Saudação -->
+  <div class="dashboard-header-new">
+    <div class="greeting-section">
+      <h1 class="dashboard-greeting-new">{{ greeting }}, {{ first_name(current_user) }}! 👋</h1>
+      <p class="dashboard-date-new">{{ today_formatted }}</p>
+    </div>
+    <div class="productivity-score-wrapper">
+      <div class="score-circle-new">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(99, 102, 241, 0.15)" stroke-width="5"></circle>
+          <circle cx="40" cy="40" r="34" fill="none" stroke="url(#gradient-score)" stroke-width="5"
+                  stroke-dasharray="{{ 2 * 3.14159 * 34 }}"
+                  stroke-dashoffset="{{ 2 * 3.14159 * 34 * (1 - stats.productivity_score / 100) }}"
+                  stroke-linecap="round"
+                  transform="rotate(-90 40 40)"></circle>
+          <defs>
+            <linearGradient id="gradient-score" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#4F46E5;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="score-text-new">{{ stats.productivity_score }}</span>
+      </div>
+      <span class="score-label-new">Produtividade</span>
+    </div>
+  </div>
+
+  <!-- Grid de Estatísticas -->
+  <div class="stats-grid-new">
+    
+    <div class="stat-card-new stat-primary-new">
+      <div class="stat-icon-new">
+        <i data-feather="check-circle"></i>
+      </div>
+      <div class="stat-content-new">
+        <div class="stat-value-new">{{ stats.tasks_completed_today }}</div>
+        <div class="stat-label-new">Hoje</div>
+      </div>
+    </div>
+
+    <div class="stat-card-new stat-warning-new">
+      <div class="stat-icon-new">
+        <i data-feather="clock"></i>
+      </div>
+      <div class="stat-content-new">
+        <div class="stat-value-new">{{ stats.pending_total }}</div>
+        <div class="stat-label-new">Pendentes</div>
+      </div>
+    </div>
+
+    <div class="stat-card-new stat-success-new">
+      <div class="stat-icon-new">🔥</div>
+      <div class="stat-content-new">
+        <div class="stat-value-new">{{ stats.streak }}</div>
+        <div class="stat-label-new">Dias Seguidos</div>
+      </div>
+    </div>
+
+    <div class="stat-card-new stat-info-new">
+      <div class="stat-icon-new">
+        <i data-feather="trending-up"></i>
+      </div>
+      <div class="stat-content-new">
+        <div class="stat-value-new">{{ stats.completion_rate }}%</div>
+        <div class="stat-label-new">Conclusão</div>
+      </div>
+    </div>
+
+    {% if stats.overdue_tasks > 0 %}
+    <div class="stat-card-new stat-danger-new">
+      <div class="stat-icon-new">
+        <i data-feather="alert-circle"></i>
+      </div>
+      <div class="stat-content-new">
+        <div class="stat-value-new">{{ stats.overdue_tasks }}</div>
+        <div class="stat-label-new">Atrasadas</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="stat-card-new stat-purple-new">
+      <div class="stat-icon-new">
+        <i data-feather="target"></i>
+      </div>
+      <div class="stat-content-new">
+        <div class="stat-value-new">{{ stats.active_goals }}</div>
+        <div class="stat-label-new">Metas Ativas</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Gráfico e Distribuição em Grid -->
+  <div class="analytics-grid">
+    
+    <!-- Gráfico Semanal -->
+    <div class="card chart-card-new">
+      <h3 class="section-title">
+        <i data-feather="bar-chart-2" class="icon"></i>
+        Atividade Semanal
+      </h3>
+      <div class="chart-container-new">
+        <canvas id="weeklyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Distribuição por Prioridade -->
+    <div class="card">
+      <h3 class="section-title">
+        <i data-feather="pie-chart" class="icon"></i>
+        Distribuição
+      </h3>
+      <div class="priority-bars-new">
+        {% set total_priority = stats.priority_distribution.low + stats.priority_distribution.medium + stats.priority_distribution.high %}
+        
+        <div class="priority-item-new">
+          <div class="priority-label-new">
+            <span class="priority-dot-new priority-high"></span>
+            <span>Alta</span>
+          </div>
+          <div class="priority-bar-bg-new">
+            <div class="priority-bar-fill-new priority-bar-high-new" 
+                 style="width: {{ (stats.priority_distribution.high / total_priority * 100) if total_priority > 0 else 0 }}%"></div>
+          </div>
+          <span class="priority-count-new">{{ stats.priority_distribution.high }}</span>
+        </div>
+
+        <div class="priority-item-new">
+          <div class="priority-label-new">
+            <span class="priority-dot-new priority-medium"></span>
+            <span>Média</span>
+          </div>
+          <div class="priority-bar-bg-new">
+            <div class="priority-bar-fill-new priority-bar-medium-new" 
+                 style="width: {{ (stats.priority_distribution.medium / total_priority * 100) if total_priority > 0 else 0 }}%"></div>
+          </div>
+          <span class="priority-count-new">{{ stats.priority_distribution.medium }}</span>
+        </div>
+
+        <div class="priority-item-new">
+          <div class="priority-label-new">
+            <span class="priority-dot-new priority-low"></span>
+            <span>Baixa</span>
+          </div>
+          <div class="priority-bar-bg-new">
+            <div class="priority-bar-fill-new priority-bar-low-new" 
+                 style="width: {{ (stats.priority_distribution.low / total_priority * 100) if total_priority > 0 else 0 }}%"></div>
+          </div>
+          <span class="priority-count-new">{{ stats.priority_distribution.low }}</span>
+        </div>
+
+        {% if total_priority == 0 %}
+        <p class="empty-message">Nenhuma tarefa pendente</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Duas Colunas: Timeline e Lateral -->
+  <div class="hub-grid">
+    
+    <!-- Coluna Principal: Timeline -->
+    <div>
+      <div class="card">
+        <h3 class="section-title">
+          <i data-feather="calendar" class="icon"></i>
+          Agenda de Hoje
+        </h3>
+        {% if timeline_items %}
+          <div class="timeline">
+            {% for item in timeline_items %}
+              <div class="timeline-item">
+                <div class="timeline-dot-icon {{ item.type }}">
+                  <i data-feather="{{ 'check-square' if item.type == 'task' else 'bell' }}" class="icon"></i>
+                </div>
+                <span class="timeline-time">{{ item.time.strftime('%H:%M') }}</span>
+                <div class="timeline-content">
+                  {% if item.type == 'task' %}
+                    <span class="priority-indicator priority-{{ item.obj.priority }}"></span>
+                    <a href="{{ url_for('tasks.edit', task_id=item.obj.id) }}">{{ item.obj.title }}</a>
+                  {% else %}
+                    <span>{{ item.obj.title }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <i data-feather="coffee" class="icon"></i>
+            <h3>Dia Livre!</h3>
+            <p>Nenhum compromisso agendado para hoje.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Coluna Lateral -->
+    <div class="hub-side-column">
+      
+      <!-- Tarefas Atrasadas -->
+      {% if atrasadas %}
+      <div class="card alert-card-new">
+        <h3 class="section-title">
+          <i data-feather="alert-triangle" class="icon"></i>
+          Atrasadas ({{ atrasadas|length }})
+        </h3>
+        <div class="simple-list">
+          {% for task in atrasadas[:5] %}
+            <div class="list-item">
+              <span class="priority-indicator priority-{{ task.priority }}"></span>
+              <a href="{{ url_for('tasks.edit', task_id=task.id) }}" style="flex:1">{{ task.title }}</a>
+              <span class="task-date-overdue">{{ task.due_date.strftime('%d/%m') }}</span>
+            </div>
+          {% endfor %}
+        </div>
+        {% if atrasadas|length > 5 %}
+          <a href="{{ url_for('tasks.index', filter='pending', sort='due_date') }}" class="view-all-link-new">
+            Ver todas →
+          </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Metas -->
+      {% if metas %}
+      <div class="card">
+        <h3 class="section-title">
+          <i data-feather="target" class="icon"></i>
+          Metas Recentes
+        </h3>
+        <div class="simple-list">
+          {% for goal in metas %}
+            <div class="list-item" style="flex-direction: column; align-items: flex-start;">
+              <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 4px;">
+                <span style="font-weight: 600;">{{ goal.title }}</span>
+                <span style="color: var(--hi); font-weight: 700;">{{ goal.progress }}%</span>
+              </div>
+              <div class="progress-bar-wrapper" style="width: 100%;">
+                <div class="progress-bar" style="width: {{ goal.progress }}%"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <a href="{{ url_for('goals.index') }}" class="view-all-link-new">Ver todas →</a>
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  const weeklyData = {{ stats.weekly_chart | tojson }};
+  
+  const ctx = document.getElementById('weeklyChart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: weeklyData.map(d => d.day),
+        datasets: [
+          {
+            label: 'Concluídas',
+            data: weeklyData.map(d => d.completed),
+            backgroundColor: 'rgba(139, 92, 246, 0.6)',
+            borderColor: 'rgba(139, 92, 246, 1)',
+            borderWidth: 2,
+            borderRadius: 8
+          },
+          {
+            label: 'Criadas',
+            data: weeklyData.map(d => d.created),
+            backgroundColor: 'rgba(79, 70, 229, 0.4)',
+            borderColor: 'rgba(79, 70, 229, 1)',
+            borderWidth: 2,
+            borderRadius: 8
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              color: '#e5e7eb',
+              font: { size: 12, weight: '600' },
+              padding: 15
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            padding: 12,
+            borderRadius: 8,
+            borderColor: 'rgba(99, 102, 241, 0.3)',
+            borderWidth: 1
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+              color: '#94a3b8'
+            },
+            grid: {
+              color: 'rgba(99, 102, 241, 0.1)'
+            }
+          },
+          x: {
+            ticks: {
+              color: '#94a3b8'
+            },
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  }
+
+  feather.replace();
+</script>
+{% endblock %}

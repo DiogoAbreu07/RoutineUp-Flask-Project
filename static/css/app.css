@@ -1,0 +1,1516 @@
+﻿/* ===== ESTILOS BASE E VARIÁVEIS ===== */
+:root{
+  --sidebar-width: 260px; /* Largura da sidebar */
+  --sidebar-transition-duration: 0.3s; /* Duração da animação */
+  --bg:#0f172a;
+  --bg2:#1e293b;
+  --panel:#0b1220;
+  --ink:#e5e7eb;
+  --muted:#94a3b8;
+  --pri:#4f46e5;
+  --pri-2:#6366f1;
+  --ok:#16a34a;
+  --warn:#f59e0b;
+  --danger:#ef4444;
+  --bd:#243041;
+  --shadow:0 10px 30px rgba(0,0,0,.35)
+}
+*{box-sizing:border-box}
+html,body{height:100%; margin: 0; padding: 0;}
+body{font-family:Inter,system-ui,Arial,sans-serif;color:var(--ink);
+  background: radial-gradient(1200px 800px at 20% -10%, #1f2937 0%, #0b1020 55%, #060912 100%) fixed;
+  overflow-x: hidden; /* Evita barra horizontal durante animação */
+}
+a{color:var(--pri-2);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ===== LAYOUT APP SHELL (position: fixed + margin-left) ===== */
+
+.sidebar {
+  position: fixed; /* Fixa na tela */
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width); /* Largura definida */
+  height: 100vh;
+  z-index: 100; /* Fica acima de tudo */
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-right: 1px solid var(--bd, #243041);
+  /* Transição para mover para fora */
+  transition: transform var(--sidebar-transition-duration) ease-in-out;
+  transform: translateX(0); /* Estado inicial: visível */
+}
+
+/* O conteúdo principal AGORA tem margin-left */
+.main-content-wrapper {
+  margin-left: var(--sidebar-width); /* Empurrado pela sidebar */
+  min-height: 100vh; /* Garante altura mínima */
+  display: flex;
+  flex-direction: column;
+  /* Transição para acompanhar a sidebar */
+  transition: margin-left var(--sidebar-transition-duration) ease-in-out;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50; /* Abaixo da sidebar */
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--bd, #243041);
+  flex-shrink: 0;
+  justify-content: space-between;
+}
+
+.topbar-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  /* Centraliza mesmo com hamburger posicionado */
+  text-align: center;
+  flex-grow: 1; /* Ocupa espaço central */
+}
+
+
+.hamburger {
+  cursor: pointer;
+  font-size: 1.2rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 4px 8px;
+  z-index: 110; /* Acima da sidebar */
+  /* Posição relativa inicial */
+  position: relative;
+}
+
+.content {
+  padding: 20px;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  flex-grow: 1;
+}
+
+/* --- ESTADO COLAPSADO --- */
+body.sb-collapsed .sidebar {
+  /* Move a sidebar totalmente para a esquerda */
+  transform: translateX(calc(-1 * var(--sidebar-width)));
+}
+
+body.sb-collapsed .main-content-wrapper {
+  /* Remove a margem, conteúdo ocupa 100% */
+  margin-left: 0;
+}
+
+/* O botão hamburger permanece onde está no topbar por padrão */
+
+/* --- ELEMENTOS GERAIS (Estrutura da Sidebar, etc) --- */
+/* (Sem alterações aqui, apenas garantindo estilos básicos) */
+.sidebar .brand a { text-decoration: none; font-weight: 800; font-size: 24px; color: var(--ink); display: block; margin-bottom: 12px;}
+.sidebar .nav { list-style: none; margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sidebar .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; text-decoration: none; white-space: nowrap; color: inherit; border-radius: 8px;} /* Raio adicionado */
+.sidebar .nav-item .icon { min-width: 24px; text-align: center; }
+.sidebar .userbox { margin-top: auto; border-top: 1px solid var(--bd, #243041); padding-top: 12px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.badge{ padding:6px 10px; border-radius:999px; font-size:12px; }
+
+/* --- OUTROS ESTILOS (Cards, Listas, Auth, etc) --- */
+/* (Mantidos da versão anterior) */
+.card{ border-radius:16px; padding:16px 18px; border:1px solid var(--bd); }
+.card-title{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin: 0 0 10px 0; font-size: 1.2rem;}
+.list{list-style:none;padding:0;margin:0}
+.list-item{display:flex;gap:8px;align-items:center;padding:8px 0}
+.list-item:not(:last-child) { border-bottom:1px solid var(--bd);}
+
+.input{ padding:12px 12px; border-radius:12px; border:1px solid var(--bd); outline:none; transition:.15s; width: 100%; }
+.input:focus{border-color:#4651ff; box-shadow:0 0 0 3px rgba(79,70,229,.25)}
+.btn{cursor:pointer; border:0; border-radius:12px; padding:10px 14px; font-weight:700; color:#fff}
+.row{display:flex;gap:10px;align-items:center}
+.muted{color:var(--muted)}
+.small{font-size:0.85rem}
+
+.grid-cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.tile{display:block;text-decoration:none;color:inherit;transition:transform .12s ease}
+.tile:hover{transform:translateY(-2px)}
+.tile .tile-title{font-weight:700;font-size:1rem; margin: 0;}
+.tile .tile-sub{color:var(--muted);font-size:13px}
+
+/* Auth (layout básico) */
+.auth-shell{ display:grid; grid-template-columns: 1fr; min-height:80vh; margin: 20px auto; max-width: 900px; border-radius: 18px; overflow: hidden; }
+.auth-right{ padding: 20px; display: flex; align-items: center; justify-content: center; }
+.auth-left{ display: none; }
+.auth-card { width: 100%; max-width: 410px;}
+@media (min-width: 768px){
+  .auth-shell{ grid-template-columns: 1fr 1fr; }
+  .auth-left{ display:flex; align-items: center; justify-content: center; padding: 38px; }
+}
+
+.flash{ margin: 0 0 16px 0; padding:10px 12px; border-radius:10px; }
+
+/* THEME: Modo Claro (simplificado) */
+body[data-theme="light"]{
+  --bg:#f8fafc; --bg2:#e2e8f0; --panel:#ffffff; --ink:#0f172a; --muted:#475569;
+  --pri:#4f46e5; --pri-2:#4338ca; --bd:#e5e7eb; --shadow:0 8px 24px rgba(0,0,0,.08);
+  background:#f8fafc !important;
+}
+
+/* ANIMAÇÕES/TRANSIÇÕES BÁSICAS */
+.nav-item{transition: background .15s, color .15s, border-color .15s, box-shadow .15s, transform .08s}
+.btn{transition: background .15s, filter .15s, transform .06s}
+.btn:active{transform:translateY(1px)}
+/* Ajustes para Ícones Feather */
+.icon {
+  display: inline-block; /* Garante alinhamento */
+  width: 1.1em; /* Tamanho ligeiramente maior que a fonte */
+  height: 1.1em;
+  stroke-width: 2; /* Espessura da linha do ícone */
+  vertical-align: middle; /* Alinha verticalmente com o texto */
+}
+
+/* Ajusta o tamanho e padding do ícone no botão hamburger */
+.hamburger .icon {
+  width: 1.4em;
+  height: 1.4em;
+}
+.hamburger {
+  padding: 6px 8px; /* Reduz padding para compensar ícone maior */
+  line-height: 0; /* Remove espaço extra vertical */
+}
+
+/* Estilo para ícones dentro de .auth-gear (se usou no login/registo) */
+.auth-gear .icon {
+    width: 1.5em;
+    height: 1.5em;
+    color: var(--muted); /* Cor cinza */
+}
+/* ===== ESTILOS PARA BARRA DE PROGRESSO (METAS) ===== */
+.progress-bar-wrapper {
+  width: 100%;
+  height: 8px; /* Altura da barra */
+  background-color: var(--bg2, #1e293b); /* Cor de fundo da barra (vazia) */
+  border-radius: 4px; /* Cantos arredondados */
+  overflow: hidden; /* Garante que o preenchimento não ultrapasse */
+  margin-top: 4px; /* Espaço acima da barra */
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pri-2, #6366f1), var(--hi, #8B5CF6)); /* Gradiente de preenchimento */
+  border-radius: 4px; /* Mantém cantos arredondados */
+  transition: width 0.3s ease-in-out; /* Animação suave ao mudar o progresso */
+}
+
+/* Ajustes no formulário de progresso para ficar mais compacto */
+.list-item form.row.small {
+  align-items: center; /* Alinha label, input e botão */
+}
+.list-item form.row.small .input.sm {
+  /* Estilos específicos se necessário, ex: */
+  /* height: 28px; */
+}
+.list-item .btn.sm {
+  padding: 6px 10px; /* Botões um pouco menores */
+  font-size: 0.8rem;
+}
+/* ===== ESTILOS PARA EMPTY STATES ===== */
+.empty-state {
+  text-align: center; /* Centraliza tudo */
+  padding: 40px 20px; /* Espaçamento interno */
+  border: 1px dashed var(--bd, #243041); /* Borda tracejada sutil */
+  border-radius: var(--radius, 14px); /* Usa o raio padrão */
+  margin-top: 20px; /* Espaço acima */
+  color: var(--muted, #94a3b8); /* Cor do texto e ícone */
+}
+
+.empty-state .icon {
+  width: 48px; /* Ícone maior */
+  height: 48px;
+  stroke-width: 1.5; /* Linha um pouco mais fina */
+  margin-bottom: 16px; /* Espaço abaixo do ícone */
+  display: block; /* Garante que a margem funcione */
+  margin-left: auto; /* Centraliza o ícone */
+  margin-right: auto;
+}
+
+.empty-state h3 {
+  color: var(--ink, #e5e7eb); /* Cor do título */
+  font-size: 1.2rem;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 0.9rem;
+  margin-top: 0;
+  margin-bottom: 16px; /* Espaço antes do botão (se houver) */
+}
+
+/* Opcional: Estilo para um botão dentro do empty state */
+.empty-state .btn {
+  margin-top: 10px;
+}
+/* ===== TRANSIÇÃO AO CONCLUIR TAREFA ===== */
+.task-details {
+  /* Define a transição para opacidade */
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1; /* Estado inicial (não concluído) */
+}
+
+.task-title, .task-description {
+   /* Define a transição para text-decoration */
+   transition: text-decoration 0.3s ease-in-out;
+   text-decoration: none; /* Estado inicial */
+}
+
+/* Estilos quando a tarefa está concluída */
+.task-details.task-done {
+  opacity: 0.6; /* Aplica a opacidade */
+}
+
+.task-details.task-done .task-title,
+.task-details.task-done .task-description {
+  text-decoration: line-through; /* Aplica o riscado */
+}
+
+/* Opcional: Manter a data de prazo visível mesmo quando concluído */
+.task-details.task-done .task-due-date {
+  /* text-decoration: none; */ /* Descomente se não quiser riscar a data */
+  /* opacity: 1; */ /* Descomente se quiser a data com opacidade total */
+}
+/* ===== CORES PARA DATAS DE PRAZO (TAREFAS) ===== */
+.task-due-date {
+  font-weight: 500; /* Leve destaque */
+  transition: color 0.3s ease-in-out; /* Transição suave */
+}
+
+/* Cor Padrão (Futuro distante ou concluído sem cor especial) */
+.due-date-default, .due-date-future, .due-date-done {
+  color: var(--muted, #94a3b8);
+  opacity: 0.9;
+}
+.task-details.task-done .due-date-done {
+    text-decoration: line-through; /* Riscar data se tarefa concluída */
+}
+
+
+/* Cor Vermelha - Atrasado */
+.due-date-overdue {
+  color: var(--danger, #ef4444);
+}
+
+/* Cor Laranja/Amarela - Hoje */
+.due-date-today {
+  color: var(--warn, #f59e0b);
+}
+
+/* Cor Azul/Ciano - Em Breve (Amanhã / Próxima Semana) */
+.due-date-soon {
+  color: var(--hi, #8B5CF6); /* Usando a cor lilás do tema */
+  /* Alternativa: color: #22d3ee; (ciano) */
+}
+/* ===== ESTILOS PARA O HUB GRID E TIMELINE ===== */
+
+/* Grid principal do Hub: 2 colunas em telas maiores */
+.hub-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Coluna única por padrão (mobile) */
+  gap: 24px; /* Espaço entre colunas/linhas */
+}
+
+@media (min-width: 768px) { /* Em telas médias/grandes */
+  .hub-grid {
+    /* Duas colunas: 2/3 para timeline, 1/3 para o lado */
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.hub-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* Espaço entre cards na coluna lateral */
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 30px; /* Espaço para a linha e pontos */
+  margin-top: 16px;
+}
+
+/* Linha vertical da timeline */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px; /* Alinha com o centro do .timeline-dot */
+  top: 5px;
+  bottom: 5px;
+  width: 2px;
+  background-color: var(--bd, #243041);
+  border-radius: 1px;
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start; /* Alinha pelo topo */
+  margin-bottom: 20px; /* Espaço entre itens */
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 0;
+  top: 5px; /* Alinha verticalmente com o texto */
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--pri, #4f46e5); /* Cor padrão */
+  border: 2px solid var(--bg, #0f172a); /* "Furo" no meio */
+  margin-left: 4px; /* Ajuste para centralizar com a linha */
+  z-index: 1;
+}
+/* Cor específica para lembretes */
+.timeline-dot.reminder {
+    background-color: var(--warn, #f59e0b);
+}
+/* Cor específica para tarefas (pode usar prioridade se quiser) */
+.timeline-dot.task {
+    background-color: var(--pri-2, #6366f1);
+}
+
+
+.timeline-time {
+  flex-shrink: 0;
+  width: 50px; /* Largura fixa para a hora */
+  font-size: 0.8rem;
+  color: var(--muted, #94a3b8);
+  margin-right: 15px; /* Espaço entre hora e conteúdo */
+  padding-top: 3px; /* Alinhar texto da hora com conteúdo */
+  text-align: right;
+}
+
+.timeline-content {
+  flex-grow: 1;
+  padding-top: 2px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  display: flex; /* Para alinhar indicador de prioridade */
+  align-items: center;
+  gap: 8px; /* Espaço entre indicador e texto */
+}
+
+/* Ajuste no indicador de prioridade dentro da timeline */
+.timeline-content .priority-indicator {
+    width: 8px;
+    height: 8px;
+}
+
+/* Estilo para listas simples nos cartões laterais */
+.simple-list .list-item {
+    padding: 6px 0;
+    border: none; /* Remove bordas internas */
+    gap: 8px; /* Espaço entre indicador e texto (se houver) */
+}
+.simple-list .list-item .priority-indicator {
+    width: 8px;
+    height: 8px;
+}
+/* ===== CORES PARA DATAS DE PRAZO (TAREFAS) ===== */
+.task-due-date {
+  font-weight: 500; /* Leve destaque */
+  transition: color 0.3s ease-in-out; /* Transição suave */
+}
+
+/* Cor Padrão (Futuro distante ou concluído sem cor especial) */
+.due-date-default, .due-date-future, .due-date-done {
+  color: var(--muted, #94a3b8);
+  opacity: 0.9;
+}
+.task-details.task-done .due-date-done {
+    text-decoration: line-through; /* Riscar data se tarefa concluída */
+}
+
+
+/* Cor Vermelha - Atrasado */
+.due-date-overdue {
+  color: var(--danger, #ef4444);
+}
+
+/* Cor Laranja/Amarela - Hoje */
+.due-date-today {
+  color: var(--warn, #f59e0b);
+}
+
+/* Cor Azul/Ciano - Em Breve (Amanhã / Próxima Semana) */
+.due-date-soon {
+  color: var(--hi, #8B5CF6); /* Usando a cor lilás do tema */
+  /* Alternativa: color: #22d3ee; (ciano) */
+}
+/* ===== ESTILOS PARA O HUB GRID E TIMELINE ===== */
+
+/* Grid principal do Hub: 2 colunas em telas maiores */
+.hub-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Coluna única por padrão (mobile) */
+  gap: 24px; /* Espaço entre colunas/linhas */
+}
+
+@media (min-width: 980px) { /* Em telas maiores */
+  .hub-grid {
+    /* Duas colunas: ~60% para timeline, ~40% para o lado */
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.hub-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* Espaço entre cards na coluna lateral */
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 30px; /* Espaço para a linha e pontos */
+  margin-top: 16px;
+}
+
+/* Linha vertical da timeline */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px; /* Alinha com o centro do .timeline-dot */
+  top: 5px;
+  bottom: 5px;
+  width: 2px;
+  background-color: var(--bd, #243041);
+  border-radius: 1px;
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start; /* Alinha pelo topo */
+  margin-bottom: 20px; /* Espaço entre itens */
+}
+/* Remove margem do último item */
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+
+.timeline-dot {
+  position: absolute;
+  left: 0;
+  top: 5px; /* Alinha verticalmente com o texto */
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--pri, #4f46e5); /* Cor padrão */
+  border: 2px solid var(--panel, #0b1220); /* Fundo do card como "furo" */
+  margin-left: 4px; /* Ajuste para centralizar com a linha */
+  z-index: 1;
+}
+/* Cor específica para lembretes */
+.timeline-dot.reminder {
+    background-color: var(--warn, #f59e0b);
+}
+/* Cor específica para tarefas */
+.timeline-dot.task {
+    background-color: var(--pri-2, #6366f1);
+}
+
+
+.timeline-time {
+  flex-shrink: 0;
+  width: 50px; /* Largura fixa para a hora */
+  font-size: 0.8rem;
+  font-weight: 500; /* Leve destaque */
+  color: var(--muted, #94a3b8);
+  margin-right: 15px; /* Espaço entre hora e conteúdo */
+  padding-top: 3px; /* Alinhar texto da hora com conteúdo */
+  text-align: right;
+}
+
+.timeline-content {
+  flex-grow: 1;
+  padding-top: 1px; /* Ajuste fino de alinhamento vertical */
+  font-size: 0.95rem;
+  line-height: 1.4;
+  display: flex; /* Para alinhar indicador de prioridade */
+  align-items: center;
+  gap: 8px; /* Espaço entre indicador e texto */
+}
+/* Remove decoração de link padrão */
+.timeline-content a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.15s ease;
+}
+.timeline-content a:hover {
+    color: var(--hi, #8B5CF6); /* Cor de destaque no hover */
+}
+
+
+/* Ajuste no indicador de prioridade dentro da timeline */
+.timeline-content .priority-indicator {
+    width: 8px;
+    height: 8px;
+    border: none; /* Remover borda interna */
+}
+
+/* Estilo para listas simples nos cartões laterais */
+.simple-list .list-item {
+    padding: 6px 0;
+    border: none; /* Remove bordas internas */
+    gap: 8px; /* Espaço entre indicador e texto (se houver) */
+}
+.simple-list .list-item .priority-indicator {
+    width: 8px;
+    height: 8px;
+    border: none;
+}
+/* ===== AJUSTES FINAIS ===== */
+
+/* Garante que botões pequenos (sm) com apenas ícones tenham bom padding */
+.btn.sm {
+  padding: 6px 8px; /* Padding ligeiramente ajustado */
+  line-height: 0; /* Remove espaço extra vertical se houver só ícone */
+}
+
+/* Garante que o ícone dentro de um botão sm fique bem dimensionado */
+.btn.sm .icon {
+  width: 1.1em; /* Tamanho do ícone */
+  height: 1.1em;
+  vertical-align: middle;
+  display: block; /* Garante que line-height: 0 funcione */
+}
+
+/* Ajuste específico para formulário de progresso das metas */
+.list-item form.row.small label {
+    margin-right: -4px; /* Aproxima label do input */
+}
+/* ===== REFINAMENTOS VISUAIS DO HUB ===== */
+
+/* Fundo Gradiente Sutil para Saudação */
+.hub-greeting-wrapper {
+  padding: 20px 0 24px 0; /* Espaçamento */
+  margin-bottom: 24px;
+  position: relative; /* Para pseudo-elemento */
+  overflow: hidden; /* Garante que o gradiente não vaze */
+  border-bottom: 1px solid var(--bd); /* Linha divisória */
+}
+
+/* Pseudo-elemento para o gradiente de fundo */
+.hub-greeting-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -50%; /* Posiciona acima e à esquerda */
+    left: -30%;
+    width: 160%; /* Tamanho grande */
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(79, 70, 229, 0.15) 0%, rgba(79, 70, 229, 0) 60%); /* Roxo suave */
+    z-index: -1; /* Fica atrás do texto */
+    animation: pulse-glow 10s infinite alternate ease-in-out; /* Animação sutil */
+}
+
+@keyframes pulse-glow {
+  from { transform: scale(0.9) rotate(-5deg); opacity: 0.8; }
+  to { transform: scale(1.1) rotate(5deg); opacity: 1; }
+}
+
+
+.hub-greeting {
+  font-weight: 900;
+  font-size: 2.2rem; /* Maior */
+  margin-bottom: 4px;
+  color: var(--ink); /* Garante cor principal */
+}
+.hub-date {
+  font-weight: 500;
+  font-size: 1.1rem; /* Ligeiramente menor */
+  color: var(--muted);
+  margin: 0;
+}
+
+/* Ajustes na Timeline */
+.timeline::before {
+  left: 12px; /* Ajustar posição da linha */
+  background-color: rgba(99, 102, 241, 0.2); /* Linha mais suave */
+}
+
+.timeline-item {
+  padding-left: 15px; /* Aumentar espaço à esquerda */
+  margin-bottom: 25px; /* Mais espaço entre itens */
+}
+
+/* Novo estilo para o Dot com Ícone */
+.timeline-dot-icon {
+    position: absolute;
+    left: 0;
+    top: 1px; /* Ajuste fino vertical */
+    width: 24px; /* Tamanho maior */
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--panel); /* Fundo do card */
+    border: 2px solid var(--bd);
+    z-index: 1;
+}
+.timeline-dot-icon .icon {
+    width: 12px; /* Tamanho do ícone interno */
+    height: 12px;
+    stroke-width: 2.5;
+    color: var(--muted); /* Cor padrão do ícone */
+}
+/* Cores específicas para tipo */
+.timeline-dot-icon.task { border-color: var(--pri-2); }
+.timeline-dot-icon.task .icon { color: var(--pri-2); }
+.timeline-dot-icon.reminder { border-color: var(--warn); }
+.timeline-dot-icon.reminder .icon { color: var(--warn); }
+
+.timeline-time {
+  padding-top: 5px; /* Ajustar alinhamento com novo dot */
+  width: 55px; /* Pouco mais de espaço */
+}
+
+.timeline-content {
+  padding-top: 4px; /* Ajustar alinhamento com novo dot */
+}
+
+/* Acentos de Cor nos Títulos das Secções (Hub) */
+.hub-grid .section-title h3 {
+    /* Usar a cor primária mais clara */
+    /* color: var(--hi); */ /* Descomente se quiser títulos coloridos */
+    font-weight: 700; /* Menos pesado que 900 */
+}
+.hub-grid .section-title .icon {
+    stroke-width: 2; /* Espessura padrão */
+}
+
+/* Ajuste nas mini-barras de progresso do card de Metas */
+.hub-side-column .list-item {
+    padding: 8px 0; /* Menos padding vertical */
+}
+.hub-side-column .progress-bar-wrapper {
+    height: 5px; /* Barra mais fina */
+    margin-top: 2px;
+}
+/* ===== CONTROLES DE FILTRO/ORDENAÇÃO (TAREFAS) ===== */
+.task-controls {
+  display: flex;
+  flex-wrap: wrap; /* Quebra linha se não couber */
+  gap: 16px; /* Espaço entre grupos */
+  margin-bottom: 20px; /* Espaço abaixo dos controles */
+  padding-bottom: 16px; /* Espaço antes da linha */
+  border-bottom: 1px solid var(--bd, #243041); /* Linha divisória */
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Espaço entre label e botões */
+}
+
+.control-group span {
+  font-size: 0.85rem;
+  color: var(--muted, #94a3b8);
+  font-weight: 500;
+}
+
+/* Estilo para botão ativo nos controles */
+.task-controls .btn.sm.ghost.active {
+  background-color: var(--pri-2, #6366f1); /* Cor de fundo ativa */
+  color: #fff; /* Texto branco */
+  border-color: var(--pri-2, #6366f1);
+  font-weight: 600;
+}
+/* Hover para botões inativos */
+.task-controls .btn.sm.ghost:not(.active):hover {
+    background-color: rgba(99, 102, 241, 0.1); /* Fundo suave no hover */
+    border-color: rgba(99, 102, 241, 0.4);
+}
+/* ===== ESTILOS PARA BACKUP/RESTAURO NA SIDEBAR ===== */
+.backup-restore {
+  margin-top: 16px; /* Espaço acima */
+  padding-top: 16px; /* Espaço interno acima */
+  border-top: 1px solid var(--bd, #243041); /* Linha divisória */
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Espaço entre título e ações */
+}
+
+.backup-title {
+  font-size: 0.75rem; /* Menor que links normais */
+  font-weight: 600;
+  color: var(--muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 12px; /* Alinhamento com padding dos nav-items */
+  margin-bottom: 4px; /* Pequeno espaço extra */
+  white-space: nowrap; /* Impede quebra de linha */
+}
+
+.backup-action .nav-item {
+  /* Usa o estilo .nav-item já definido */
+  cursor: pointer; /* Indica que o label de restauro é clicável */
+  width: 100%; /* Garante largura total */
+  justify-content: flex-start; /* Alinha ícone e texto à esquerda */
+}
+
+/* Esconder o input file real */
+#restore-file {
+  display: none;
+}
+
+/* Ajuste no estado colapsado para esconder título */
+body.sb-collapsed .backup-title {
+    display: none;
+}
+body.sb-collapsed .backup-action .nav-item {
+    justify-content: center; /* Centraliza ícone quando colapsado */
+}
+/* ===== ESTILOS PARA PÁGINA DE PERFIL ===== */
+.profile-form {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--bd, #243041);
+}
+
+.profile-form h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.profile-form .form-row {
+  margin-bottom: 12px; /* Espaço entre linhas do formulário */
+}
+.profile-form .form-row label {
+    display: block; /* Garante que label fica acima */
+    margin-bottom: 4px;
+}
+
+.profile-form button.btn {
+  margin-top: 8px; /* Espaço acima do botão */
+}
+
+/* Estilo para input desativado (email) */
+.input:disabled {
+    background-color: var(--bg2, #1e293b);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Ajuste no Userbox para link de perfil */
+.userbox {
+    /* Mantém gap e align-items */
+}
+.userbox .profile-link {
+    width: 100%;
+    justify-content: flex-start; /* Alinha à esquerda */
+    margin-bottom: 8px; /* Espaço antes do botão Sair */
+}
+.userbox .logout-button {
+    /* Mantém estilo */
+}
+
+/* Ajuste no estado colapsado para link de perfil */
+body.sb-collapsed .userbox .profile-link {
+    justify-content: center; /* Centraliza ícone */
+}
+/* ===== AJUSTES NO TOPBAR E PERFIL ===== */
+
+.topbar {
+  /* Mantém flex, align-items, sticky, etc. */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 10px 16px; /* Padding vertical ligeiramente menor */
+  border-bottom: 1px solid var(--bd, #243041);
+  flex-shrink: 0;
+  justify-content: space-between; /* Garante espaço entre itens */
+}
+
+/* Ajuste no título para centralização com itens em ambos os lados */
+.topbar-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  /* Centraliza texto, mas não o bloco em si se houver itens dos lados */
+  text-align: center;
+  /* Remove margens e paddings que forçavam centralização anterior */
+  margin: 0;
+  padding: 0;
+  /* O flexbox no .topbar cuidará do espaçamento */
+  flex-grow: 1; /* Permite ocupar espaço central */
+  /* Opcional: Limitar largura máxima se necessário */
+  /* max-width: 300px; */
+}
+
+
+/* Novo Wrapper para ações da direita */
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espaço se houver mais botões no futuro */
+    min-width: 40px; /* Garante espaço mínimo igual ao hamburger */
+    justify-content: flex-end; /* Alinha item(ns) à direita */
+}
+
+
+/* Estilo do Link/Avatar de Perfil */
+.topbar-profile-link {
+  display: block;
+  text-decoration: none;
+}
+
+/* ESTILOS PARA AVATAR NO TOPBAR (Abordagem background-image) */
+/* ESTILOS PARA AVATAR NO TOPBAR (Abordagem background-image) */
+/* ===== ESTILOS PARA AVATAR NO TOPBAR (Abordagem background-image) ===== */
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--bg2, #1e293b); /* Fallback/Loading background */
+  border: 1px solid var(--bd, #243041);
+  overflow: hidden; /* Garante cantos arredondados */
+  transition: box-shadow 0.15s ease;
+
+  /* Propriedades ESSENCIAIS para exibir a imagem definida via style="..." no HTML */
+  background-size: cover;       /* Redimensiona para cobrir */
+  background-position: center;  /* Centraliza a imagem */
+  background-repeat: no-repeat; /* Evita repetição */
+  /* Certifique-se que NÃO HÁ outra linha 'background-image: ...' aqui */
+}
+
+/* Hover */
+.topbar-profile-link:hover .profile-avatar {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+/* Regras para .profile-avatar-img e .icon-fallback NÃO SÃO USADAS nesta abordagem */
+/* Certifique-se de que não existem aqui para evitar conflitos */
+/* .profile-avatar-img { ... } */
+/* .profile-avatar .icon-fallback { ... } */
+/* Hover */
+.topbar-profile-link:hover .profile-avatar {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+/* Regras para .profile-avatar-img e .icon-fallback podem ser removidas */
+/* se estiver a usar a abordagem background-image exclusivamente */
+
+/* Regras para .profile-avatar-img e .icon-fallback podem ser removidas */
+/* .profile-avatar-img { ... } */
+/* .profile-avatar .icon-fallback { ... } */
+
+.topbar-profile-link:hover .profile-avatar {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+.profile-avatar .icon {
+  width: 18px; /* Tamanho do ícone dentro do círculo */
+  height: 18px;
+  color: var(--muted, #94a3b8);
+  stroke-width: 2;
+}
+
+.topbar-profile-link:hover .profile-avatar {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); /* Efeito de foco/hover */
+}
+
+/* Remover link de perfil da Userbox na Sidebar */
+.userbox .profile-link {
+    display: none; /* Esconde o link antigo */
+}
+/* ===== AJUSTES NA ROTINA DO HUB ===== */
+
+/* Card principal da Rotina */
+.routine-card {
+  /* Pode adicionar padding específico se necessário */
+}
+
+/* Lista de Tarefas Gerais do Dia */
+.day-tasks-list {
+  margin-top: 8px; /* Espaço abaixo do título "Tarefas de Hoje" */
+}
+.day-tasks-list .list-item {
+    padding: 8px 0; /* Mais compacto que a timeline */
+    gap: 8px;
+    align-items: center; /* Alinha indicador e texto */
+    border-bottom: 1px solid var(--bd);
+}
+.day-tasks-list .list-item:last-child {
+    border-bottom: none; /* Remove borda do último item */
+}
+.day-tasks-list .task-link {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.15s ease;
+    flex-grow: 1; /* Ocupa espaço */
+}
+.day-tasks-list .task-link:hover {
+    color: var(--hi);
+}
+.day-tasks-list .priority-indicator {
+    flex-shrink: 0; /* Impede que encolha */
+}
+
+/* Divisor entre Tarefas e Lembretes */
+hr.routine-divider {
+  border: none;
+  border-top: 1px solid var(--bd);
+  margin: 20px 0 0 0; /* Margem acima e remove margem abaixo */
+}
+
+/* Ajustes na Timeline de Lembretes (se necessário) */
+.reminders-timeline {
+  margin-top: 8px; /* Espaço abaixo do título "Próximos Lembretes" */
+  padding-left: 30px; /* Mantém padding */
+}
+.reminders-timeline::before {
+  /* Mantém a linha vertical */
+  left: 12px;
+  background-color: rgba(245, 158, 11, 0.3); /* Linha com cor de Lembrete (Warn) */
+}
+.reminders-timeline .timeline-item {
+    margin-bottom: 15px; /* Espaço ligeiramente menor */
+}
+/* Garante que o dot de Lembrete tenha a cor certa */
+.reminders-timeline .timeline-dot-icon.reminder {
+    border-color: var(--warn);
+}
+.reminders-timeline .timeline-dot-icon.reminder .icon {
+    color: var(--warn);
+}
+/* ===== ESTILOS PARA PÁGINA DE PERFIL (Upload Foto) ===== */
+.profile-avatar-section {
+  margin-bottom: 24px; /* Espaço abaixo da secção da foto */
+  text-align: center; /* Centraliza imagem e botão */
+}
+
+.profile-avatar-large {
+  width: 100px; /* Tamanho da pré-visualização */
+  height: 100px;
+  border-radius: 50%; /* Círculo */
+  object-fit: cover; /* Garante que a imagem cubra o círculo sem distorcer */
+  border: 3px solid var(--bd, #243041); /* Borda */
+  margin-bottom: 12px;
+  display: block; /* Para margens auto funcionarem */
+  margin-left: auto;
+  margin-right: auto;
+  background-color: var(--bg2); /* Fundo caso imagem falhe */
+}
+
+/* Estilo para o label que ativa o input file */
+.profile-avatar-section label.btn {
+  display: inline-block; /* Permite margens */
+  cursor: pointer;
+}
+
+/* Esconde o input file real */
+.profile-avatar-section input[type="file"] {
+  display: none;
+}
+
+/* Ajuste no grid de detalhes para talvez ter menos colunas */
+.profile-details-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Aumenta min-width */
+}
+
+
+/* ===== ESTILOS PARA AVATAR NO TOPBAR ===== */
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cobre o círculo */
+    display: block;
+}
+
+/* Remove o ícone placeholder se a imagem for carregada */
+.profile-avatar .icon {
+    display: none; /* Esconde o ícone se houver <img> */
+}
+/* Re-exibe se a imagem falhar (útil com JavaScript, mas CSS puro é limitado) */
+/* .profile-avatar img:error + .icon { display: block; } */ /* Não funciona bem em todos browsers */
+/* ===== PAINEL DE ESTATÍSTICAS (HUB) ===== */
+.hub-stats {
+  display: grid;
+  /* Cria colunas responsivas, mínimo 150px, máximo 1fr (ocupa espaço igual) */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px; /* Espaço entre os cartões */
+  margin-bottom: 24px; /* Espaço abaixo do painel */
+}
+
+.stat-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  border: 1px solid var(--bd, #243041);
+  border-radius: var(--radius, 14px);
+  padding: 16px;
+  position: relative; /* Para posicionar o ícone */
+  overflow: hidden; /* Garante que o ícone não vaze */
+}
+
+.stat-value {
+  font-size: 2rem; /* Número grande */
+  font-weight: 800;
+  color: var(--ink, #e5e7eb);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--muted, #94a3b8);
+}
+
+.stat-icon {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  width: 32px; /* Tamanho do ícone de fundo */
+  height: 32px;
+  stroke-width: 1.5;
+  color: rgba(99, 102, 241, 0.2); /* Cor padrão suave (roxo/índigo) */
+  opacity: 0.8;
+}
+/* Cores específicas para ícones */
+.stat-icon.done {
+    color: rgba(22, 163, 74, 0.25); /* Verde suave */
+}
+.stat-icon.goals {
+     color: rgba(139, 92, 246, 0.2); /* Lilás suave */
+}
+/* ==========================================
+   DASHBOARD ANALYTICS - RoutineUp Style
+   Mantém a identidade visual do projeto
+   ========================================== */
+
+.dashboard-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== HEADER COM SAUDAÇÃO ===== */
+.dashboard-header-new {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  margin-bottom: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(147, 197, 253, 0.12);
+  border-radius: var(--radius, 14px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gradiente de fundo sutil */
+.dashboard-header-new::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 140%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.greeting-section {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-greeting-new {
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0 0 6px 0;
+  background: linear-gradient(90deg, #e5e7eb, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dashboard-date-new {
+  font-size: 1rem;
+  color: var(--muted, #94a3b8);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+/* Score de Produtividade */
+.productivity-score-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.score-circle-new {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.score-circle-new svg {
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
+}
+
+.score-text-new {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--ink, #e5e7eb);
+}
+
+.score-label-new {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== GRID DE ESTATÍSTICAS ===== */
+.stats-grid-new {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card-new {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(147, 197, 253, 0.12);
+  border-radius: var(--radius, 14px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card-new:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+}
+
+/* Brilho de fundo nos cards */
+.stat-card-new::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.03));
+  pointer-events: none;
+}
+
+.stat-icon-new {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-icon-new i {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2;
+}
+
+.stat-content-new {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-value-new {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 4px;
+  color: var(--ink, #e5e7eb);
+}
+
+.stat-label-new {
+  font-size: 0.85rem;
+  color: var(--muted, #94a3b8);
+  font-weight: 500;
+}
+
+/* Cores específicas dos cards */
+.stat-primary-new {
+  border-left: 3px solid #4F46E5;
+}
+.stat-primary-new .stat-icon-new {
+  background: rgba(79, 70, 229, 0.15);
+  color: #6366f1;
+}
+
+.stat-warning-new {
+  border-left: 3px solid #f59e0b;
+}
+.stat-warning-new .stat-icon-new {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.stat-success-new {
+  border-left: 3px solid #16a34a;
+}
+.stat-success-new .stat-icon-new {
+  background: rgba(22, 163, 74, 0.15);
+}
+
+.stat-info-new {
+  border-left: 3px solid #8B5CF6;
+}
+.stat-info-new .stat-icon-new {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8B5CF6;
+}
+
+.stat-danger-new {
+  border-left: 3px solid #ef4444;
+}
+.stat-danger-new .stat-icon-new {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.stat-purple-new {
+  border-left: 3px solid #a78bfa;
+}
+.stat-purple-new .stat-icon-new {
+  background: rgba(167, 139, 250, 0.15);
+  color: #a78bfa;
+}
+
+/* ===== GRID DE ANALYTICS (Gráfico + Distribuição) ===== */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.chart-card-new {
+  min-height: 320px;
+}
+
+.chart-container-new {
+  height: 240px;
+  padding: 10px 0;
+}
+
+/* ===== DISTRIBUIÇÃO POR PRIORIDADE ===== */
+.priority-bars-new {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.priority-item-new {
+  display: grid;
+  grid-template-columns: 90px 1fr 35px;
+  align-items: center;
+  gap: 10px;
+}
+
+.priority-label-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink, #e5e7eb);
+}
+
+.priority-dot-new {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.priority-dot-new.priority-high {
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.priority-dot-new.priority-medium {
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+.priority-dot-new.priority-low {
+  background: #16a34a;
+  box-shadow: 0 0 8px rgba(22, 163, 74, 0.5);
+}
+
+.priority-bar-bg-new {
+  height: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(147, 197, 253, 0.08);
+}
+
+.priority-bar-fill-new {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.6s ease;
+  position: relative;
+}
+
+/* Efeito de brilho nas barras */
+.priority-bar-fill-new::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.priority-bar-high-new {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.priority-bar-medium-new {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.priority-bar-low-new {
+  background: linear-gradient(90deg, #16a34a, #15803d);
+}
+
+.priority-count-new {
+  text-align: right;
+  font-weight: 700;
+  color: var(--ink, #e5e7eb);
+  font-size: 0.95rem;
+}
+
+/* ===== ALERT CARD (Tarefas Atrasadas) ===== */
+.alert-card-new {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.03));
+}
+
+.alert-card-new .section-title {
+  color: #fca5a5;
+}
+
+/* ===== VIEW ALL LINK ===== */
+.view-all-link-new {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  margin-top: 12px;
+  color: var(--hi, #8B5CF6);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.view-all-link-new:hover {
+  background: rgba(139, 92, 246, 0.1);
+  text-decoration: none;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 900px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header-new {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .dashboard-greeting-new {
+    font-size: 1.6rem;
+  }
+
+  .stats-grid-new {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .priority-item-new {
+    grid-template-columns: 75px 1fr 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid-new {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== ANIMAÇÕES ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card-new {
+  animation: fadeInUp 0.5s ease-out backwards;
+}
+
+.stat-card-new:nth-child(1) { animation-delay: 0.05s; }
+.stat-card-new:nth-child(2) { animation-delay: 0.1s; }
+.stat-card-new:nth-child(3) { animation-delay: 0.15s; }
+.stat-card-new:nth-child(4) { animation-delay: 0.2s; }
+.stat-card-new:nth-child(5) { animation-delay: 0.25s; }
+.stat-card-new:nth-child(6) { animation-delay: 0.3s; }
+
+.card {
+  animation: fadeInUp 0.5s ease-out 0.3s backwards;
+}

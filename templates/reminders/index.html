@@ -1,0 +1,61 @@
+﻿{% extends "base.html" %}
+{% block title %}Lembretes{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 class="card-title">
+      <i data-feather="bell" class="icon"></i> Lembretes
+  </h2>
+
+  <details style="margin-bottom:16px" {% if not items %}open{% endif %}> {# Abrir por padrão se não houver lembretes #}
+      <summary class="btn" style="display:inline-block; cursor:pointer;">Adicionar Novo Lembrete</summary>
+      <div style="margin-top:12px; border-top: 1px solid var(--bd); padding-top: 16px;">
+         <form method="post" action="{{ url_for('reminders.create') }}" class="row gap" style="flex-wrap: wrap;"> {# Adicionado flex-wrap #}
+           <input name="title" class="input" placeholder="Lembrete..." required style="flex-grow: 1; min-width: 200px;"/>
+           <input type="datetime-local" name="remind_at" class="input" required style="min-width: 220px;" />
+           <button class="btn" type="submit">Adicionar</button>
+         </form>
+      </div>
+  </details>
+
+
+  <div class="list">
+    {% for r in items %}
+      <div class="list-item" style="gap: 10px;"> {# Ajustado gap #}
+        <div class="grow">
+          {# Adiciona estilo de concluído se r.done for verdadeiro #}
+          <div class="strong task-details {{ 'task-done' if r.done else '' }}">
+              <span class="task-title">{{ r.title }}</span> {# Usa classes de task para consistência #}
+          </div>
+          <small class="muted task-due-date {{ 'due-date-done' if r.done else 'due-date-soon' }}" style="margin-top: 2px; display: block;"> {# Usa classes de task para consistência #}
+             Lembrar em: {{ r.remind_at.strftime("%d/%m/%Y %H:%M") }}
+          </small>
+        </div>
+        {# Botão Toggle com Ícone #}
+        <form method="post" action="{{ url_for('reminders.toggle', id=r.id) }}">
+          <button class="btn sm {{ 'secondary' if r.done else 'ghost' }}" type="submit" title="{{ 'Desfazer' if r.done else 'Marcar como visto' }}">
+              <i data-feather="{{ 'rotate-ccw' if r.done else 'check' }}" class="icon"></i>
+          </button>
+        </form>
+        {# Botão Excluir com Ícone #}
+        <form method="post" action="{{ url_for('reminders.delete', id=r.id) }}" onsubmit="return confirm('Tem a certeza que deseja excluir este lembrete?');">
+          <button class="btn sm danger" type="submit" title="Excluir Lembrete">
+              <i data-feather="trash-2" class="icon"></i>
+          </button>
+        </form>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <i data-feather="bell-off" class="icon"></i> {# Ícone diferente para vazio #}
+        <h3>Sem Lembretes Agendados</h3>
+        <p>Não perca compromissos importantes. Adicione um lembrete usando o botão acima!</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  feather.replace() // Garante que os ícones sejam renderizados
+</script>
+{% endblock %}

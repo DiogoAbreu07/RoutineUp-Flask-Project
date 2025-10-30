@@ -1,0 +1,67 @@
+﻿{% extends "base.html" %}
+{% block title %}Cadastro{% endblock %}
+
+{% block content %}
+<div class="auth-shell card" style="border:none; padding:0">
+  <!-- Painel motivacional (mesmo do login) -->
+  <section class="auth-left">
+    <div class="mkt">
+      <h1>Comece hoje.<br/>Construa sua rotina ideal.</h1>
+      <p>Crie sua conta para planejar, priorizar e concluir com o RoutineUp.</p>
+     {% block scripts %}
+<script>
+  feather.replace()
+</script>
+{% endblock %}
+    </div>
+  </section>
+
+  <!-- Formulário de cadastro -->
+  <section class="auth-right">
+    <div class="auth-card">
+      <div class="auth-title">Crie sua conta</div>
+      <p class="auth-sub">Leva menos de um minuto — e muda como você cuida do seu dia.</p>
+
+      {% include "_partials/flash.html" %}
+
+      <form method="post" action="{{ url_for('users.register_post') }}">
+        <div class="form-row">
+          <label class="small muted" for="name">Nome</label>
+          <input class="input" id="name" name="name" type="text" placeholder="Seu nome" required>
+        </div>
+
+        <div class="form-row">
+          <label class="small muted" for="email">E-mail</label>
+          <input class="input" id="email" name="email" type="email" placeholder="voce@exemplo.com" required>
+        </div>
+
+        <div class="form-row">
+          <label class="small muted" for="password">Senha</label>
+          <input class="input" id="password" name="password" type="password" placeholder="Mínimo 6 caracteres" required>
+        </div>
+
+        <div class="form-row">
+          <label class="small muted" for="birth_date">Data de nascimento</label>
+          <input class="input" id="birth_date" name="birth_date" type="date">
+        </div>
+
+        <div class="form-row">
+          <label class="small muted" for="gender">Gênero</label>
+          <select id="gender" name="gender" class="input">
+            <option value="">Prefiro não informar</option>
+            <option value="feminino">Feminino</option>
+            <option value="masculino">Masculino</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+
+        <button class="btn" type="submit" style="width:100%">Cadastrar</button>
+      </form>
+
+      <div class="hr-or"></div>
+      <p class="small muted">Já tem conta? <a href="{{ url_for('users.login') }}">Entrar</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}
+

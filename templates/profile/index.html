@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2 class="card-title">
+    <i data-feather="user" class="icon"></i>
+    Meu Perfil
+  </h2>
+
+  {% include "_partials/flash.html" ignore missing %}
+
+  {# --- Formulário de Detalhes e Avatar --- #}
+  {# Adicionado enctype para upload de ficheiro #}
+  <form method="post" action="{{ url_for('profile.update_details') }}" class="profile-form" enctype="multipart/form-data">
+    <h3>Detalhes Pessoais</h3>
+
+    {# Secção do Avatar #}
+    <div class="profile-avatar-section">
+        <img id="avatar-preview" src="{{ avatar_url or url_for('static', filename='img/default-avatar.png') }}" alt="Foto de Perfil" class="profile-avatar-large"> {# Assume default-avatar.png em static/img #}
+        <label for="avatar" class="btn sm ghost">Alterar Foto</label>
+        <input type="file" id="avatar" name="avatar" accept="image/png, image/jpeg, image/gif, image/webp" onchange="previewAvatar(event)">
+        <small class="muted" style="display: block; margin-top: 5px;">Use PNG, JPG, GIF ou WEBP (Max 2MB).</small> {# Ajustar limite se necessário #}
+    </div>
+
+    {# Grid para outros detalhes #}
+    <div class="profile-details-grid">
+        <div class="form-row">
+            <label for="email" class="small muted">E-mail</label>
+            <input type="email" id="email" class="input" value="{{ user.email }}" disabled title="Não é possível alterar o e-mail.">
+        </div>
+        <div class="form-row">
+            <label for="name" class="small muted">Nome</label>
+            <input type="text" id="name" name="name" class="input" value="{{ user.name or '' }}" required minlength="2">
+        </div>
+        <div class="form-row">
+            <label for="birth_date" class="small muted">Data de Nascimento</label>
+            <input type="date" id="birth_date" name="birth_date" class="input" value="{{ user.birth_date.strftime('%Y-%m-%d') if user.birth_date else '' }}">
+        </div>
+        <div class="form-row">
+            <label for="gender" class="small muted">Género</label>
+             <select id="gender" name="gender" class="input">
+                <option value="" {{ 'selected' if not user.gender else '' }}>Prefiro não informar</option>
+                <option value="feminino" {{ 'selected' if user.gender == 'feminino' else '' }}>Feminino</option>
+                <option value="masculino" {{ 'selected' if user.gender == 'masculino' else '' }}>Masculino</option>
+                <option value="outro" {{ 'selected' if user.gender == 'outro' else '' }}>Outro</option>
+             </select>
+        </div>
+    </div>
+    <button type="submit" class="btn">Salvar Detalhes</button>
+  </form>
+
+  {# --- Formulário de Senha (inalterado) --- #}
+  <form method="post" action="{{ url_for('profile.update_password') }}" class="profile-form">
+    <h3>Alterar Senha</h3>
+    <div class="form-row">
+        <label for="current_password" class="small muted">Senha Atual</label>
+        <input type="password" id="current_password" name="current_password" class="input" required placeholder="••••••••">
+    </div>
+     <div class="form-row">
+        <label for="new_password" class="small muted">Nova Senha</label>
+        <input type="password" id="new_password" name="new_password" class="input" required minlength="6" placeholder="Mínimo 6 caracteres">
+    </div>
+     <div class="form-row">
+        <label for="confirm_password" class="small muted">Confirmar Nova Senha</label>
+        <input type="password" id="confirm_password" name="confirm_password" class="input" required minlength="6" placeholder="Repita a nova senha">
+    </div>
+    <button type="submit" class="btn">Alterar Senha</button>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  feather.replace();
+
+  // Script para pré-visualização do avatar
+  function previewAvatar(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+      const output = document.getElementById('avatar-preview');
+      output.src = reader.result;
+    };
+    if (event.target.files[0]) {
+      reader.readAsDataURL(event.target.files[0]);
+    }
+  }
+</script>
+{% endblock %}

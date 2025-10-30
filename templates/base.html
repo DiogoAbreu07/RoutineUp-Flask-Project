@@ -1,0 +1,88 @@
+﻿<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}RoutineUp{% endblock %}</title>
+
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v=26">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-pro.css') }}?v=26">
+
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="app-shell">
+  {% set ep = request.endpoint or '' %}
+
+  <aside class="sidebar">
+     <div class="brand"><a href="{{ url_or('hub.index', url_or('tasks.index', url_for('users.login'))) }}">RoutineUp</a></div>
+     <nav class="nav">
+       <a class="nav-item {{ 'active' if ep.startswith('hub.') else '' }}" href="{{ url_or('hub.index', url_or('tasks.index', url_for('users.login'))) }}"><i data-feather="home" class="icon"></i><span class="nav-text">Início</span></a>
+       <a class="nav-item {{ 'active' if ep.startswith('tasks.') else '' }}" href="{{ url_for('tasks.index') }}"><i data-feather="check-square" class="icon"></i><span class="nav-text">Tarefas</span></a>
+       {% if has_endpoint('goals.index') %}<a class="nav-item {{ 'active' if ep.startswith('goals.') else '' }}" href="{{ url_for('goals.index') }}"><i data-feather="target" class="icon"></i><span class="nav-text">Metas</span></a>{% endif %}
+       {% if has_endpoint('reminders.index') %}<a class="nav-item {{ 'active' if ep.startswith('reminders.') else '' }}" href="{{ url_for('reminders.index') }}"><i data-feather="clock" class="icon"></i><span class="nav-text">Lembretes</span></a>{% endif %}
+     </nav>
+     {% if current_user.is_authenticated and has_endpoint('backup.backup') and has_endpoint('backup.restore') %}
+     <div class="backup-restore">
+         <span class="backup-title nav-text">Backup / Restauro</span>
+         <a href="{{ url_for('backup.backup') }}" class="nav-item backup-action" title="Fazer Backup"><i data-feather="download" class="icon"></i><span class="nav-text">Fazer Backup</span></a>
+         <form action="{{ url_for('backup.restore') }}" method="post" enctype="multipart/form-data" class="backup-action">
+             <label for="restore-file" class="nav-item" title="Restaurar Backup"><i data-feather="upload" class="icon"></i><span class="nav-text">Restaurar</span></label>
+             <input type="file" name="file" id="restore-file" accept=".db,.sqlite,.sqlite3" style="display: none;" onchange="if(this.value) { if(confirm('Atenção: Restaurar um backup substituirá TODOS os dados atuais. Deseja continuar?')) { this.form.submit(); } else { this.value=null; } }">
+         </form>
+     </div>
+     {% endif %}
+    <div class="userbox">
+      {% if current_user.is_authenticated %}
+        <span class="badge">{{ first_name(current_user) }}</span>
+        <form method="post" action="{{ url_for('users.logout') }}" style="margin:0">
+          <button class="nav-item logout-button" type="submit" style="width: 100%; justify-content: center;">
+            <i data-feather="log-out" class="icon"></i>
+            <span class="nav-text">Sair</span>
+          </button>
+        </form>
+      {% else %}
+        <a class="nav-item" href="{{ url_for('users.login') }}"><i data-feather="log-in" class="icon"></i><span class="nav-text">Entrar</span></a>
+      {% endif %}
+    </div>
+  </aside>
+
+  <div class="main-content-wrapper">
+    <header class="topbar">
+      <button id="sb-toggle" class="hamburger" title="Alternar menu">
+         <i data-feather="menu" class="icon"></i>
+      </button>
+      <div class="topbar-title">RoutineUp</div>
+      <div class="topbar-actions">
+          {% if current_user.is_authenticated and has_endpoint('profile.index') %}
+              {% set avatar_path = 'uploads/avatars/' ~ current_user.avatar_filename if current_user.avatar_filename else 'img/default-avatar.png' %}
+              
+              <a href="{{ url_for('profile.index') }}" class="topbar-profile-link" title="Meu Perfil">
+                  <div class="profile-avatar"
+                       style="background-image: url('{{ url_for('static', filename=avatar_path) }}');">
+                  </div>
+              </a>
+          {% else %}
+              <div style="width: 40px; visibility: hidden;"></div>
+          {% endif %}
+      </div>
+    </header>
+    <main class="content">
+       {% with msgs = get_flashed_messages(with_categories=true) %}
+         {% include "_partials/flash.html" ignore missing %}
+         {% if not template_included and msgs %}
+             {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+         {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/nav.js') }}"></script>
+  <script>feather.replace()</script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

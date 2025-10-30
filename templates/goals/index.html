@@ -1,0 +1,66 @@
+﻿{% extends "base.html" %}
+{% block title %}Metas{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 class="card-title">
+    <i data-feather="target" class="icon"></i>
+    Minhas Metas
+  </h2>
+
+  <details style="margin-bottom:16px" {% if not items %}open{% endif %}> {# Abrir por padrão se não houver metas #}
+      <summary class="btn" style="display:inline-block; cursor:pointer;">Adicionar Nova Meta</summary>
+      <div style="margin-top:12px; border-top: 1px solid var(--bd); padding-top: 16px;">
+          <form method="post" action="{{ url_for('goals.create') }}" class="row gap">
+            <input name="title" class="input" placeholder="Ex: Ler 12 livros este ano..." required style="flex-grow: 1;"/>
+            <button class="btn">Adicionar</button>
+          </form>
+      </div>
+  </details>
+
+
+  <div class="list">
+    {% for g in items %}
+      <div class="list-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <span class="strong" style="font-size: 1.1rem;">{{ g.title }}</span>
+          <small class="muted">{{ g.progress }}%</small>
+        </div>
+
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar" style="width: {{ g.progress }}%;"></div>
+        </div>
+
+        <div class="row gap" style="margin-top: 8px; justify-content: space-between; align-items: center;"> {# space-between para separar progresso da exclusão #}
+          {# Formulário de Progresso (mais compacto) #}
+          <form method="post" action="{{ url_for('goals.progress', id=g.id) }}" class="row gap small" style="flex-grow: 1; justify-content: flex-end;"> {# Alinha à direita #}
+            <label for="progress-{{g.id}}" class="muted small" style="white-space: nowrap;">Progresso:</label>
+            <input type="number" id="progress-{{g.id}}" min="0" max="100" name="progress" value="{{ g.progress }}" class="input sm" style="width: 70px; padding: 6px 8px; font-size: 0.8rem;">
+            <button class="btn sm" type="submit" title="Salvar Progresso">
+               <i data-feather="save" class="icon" style="width: 1em; height: 1em;"></i> {# Ícone Salvar #}
+            </button>
+          </form>
+
+          {# Formulário de Exclusão (apenas botão de ícone) #}
+          <form method="post" action="{{ url_for('goals.delete', id=g.id) }}" style="margin-left: 8px;" onsubmit="return confirm('Tem a certeza que deseja excluir esta meta?');">
+            <button class="btn sm danger" type="submit" title="Excluir Meta">
+               <i data-feather="trash-2" class="icon" style="width: 1em; height: 1em;"></i> {# Ícone Excluir #}
+            </button>
+          </form>
+        </div>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <i data-feather="target" class="icon"></i>
+        <h3>Nenhuma Meta Definida</h3>
+        <p>Defina objetivos claros para se manter motivado. Adicione sua primeira meta usando o botão acima!</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  feather.replace() // Garante que os ícones sejam renderizados
+</script>
+{% endblock %}

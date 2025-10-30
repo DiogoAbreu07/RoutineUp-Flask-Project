@@ -1,0 +1,11 @@
+﻿{% extends "base.html" %}
+{% block title %}Nova Tarefa · RoutineUp{% endblock %}
+{% block content %}
+<div class="page">
+  <h1 class="page-title">Nova Tarefa</h1>
+  {% include "tasks/_form.html" with context %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+{% endblock %}

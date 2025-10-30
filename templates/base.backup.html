@@ -1,0 +1,110 @@
+﻿<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}RoutineUp{% endblock %}</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-pro.css') }}">
+  <style>
+    /* Header compacto e profissional */
+    .topbar{
+      background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+      color:#fff;
+      padding:12px 20px;
+      display:flex; align-items:center; justify-content:space-between;
+      box-shadow:0 4px 16px rgba(0,0,0,.12);
+    }
+    .brand a{ color:#fff; text-decoration:none; font-weight:800; letter-spacing:.3px; font-size:20px }
+    .brand small{ opacity:.9; font-weight:500; margin-left:8px; font-size:12px }
+    ul.nav{ list-style:none; display:flex; gap:10px; margin:0; padding:0 }
+    .nav-item{
+      display:inline-block; padding:8px 12px; border-radius:10px;
+      color:#fff; text-decoration:none; border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      transition: transform .08s, border-color .15s, background .15s, box-shadow .15s, filter .15s;
+    }
+    .nav-item:hover{ transform: translateY(-1px); filter:brightness(1.05) }
+    .nav-item.active{ background:rgba(255,255,255,.18) }
+    .userbox{ display:flex; align-items:center; gap:10px }
+    .badge{
+      padding:.25rem .5rem; border-radius:999px; background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.22); font-size:.85rem;
+    }
+    .container{ max-width:980px; margin:18px auto; padding:0 16px }
+    .flash{ margin:12px 0; padding:10px 12px; border-radius:10px; background:#eef2ff; color:#1e1b4b; }
+  </style>
+</head>
+<body>
+  {% set ep = request.endpoint or '' %}
+
+  <header class="topbar">
+    <div class="brand">
+      <a href="{{ url_or('hub.index', url_or('tasks.index', url_for('users.login'))) }}">RoutineUp</a>
+      <small>organize seu dia com clareza</small>
+    </div>
+
+    <nav>
+      <ul class="nav">
+        <li>
+          <a class="nav-item {{ 'active' if ep.startswith('hub.') else '' }}"
+             href="{{ url_or('hub.index', url_or('tasks.index', url_for('users.login'))) }}">
+            Início
+          </a>
+        </li>
+        <li>
+          <a class="nav-item {{ 'active' if ep.startswith('tasks.') else '' }}"
+             href="{{ url_for('tasks.index') }}">
+            Tarefas
+          </a>
+        </li>
+        {% if has_endpoint('goals.index') %}
+        <li>
+          <a class="nav-item {{ 'active' if ep.startswith('goals.') else '' }}"
+             href="{{ url_for('goals.index') }}">
+            Metas
+          </a>
+        </li>
+        {% endif %}
+        {% if has_endpoint('reminders.index') %}
+        <li>
+          <a class="nav-item {{ 'active' if ep.startswith('reminders.') else '' }}"
+             href="{{ url_for('reminders.index') }}">
+            Lembretes
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+
+    <div class="userbox">
+      {% if current_user.is_authenticated %}
+        <span class="badge">{{ first_name(current_user) }}</span>
+        <form method="post" action="{{ url_for('users.logout') }}" style="margin:0">
+          <button class="nav-item" type="submit">Sair</button>
+        </form>
+      {% else %}
+        <a class="nav-item" href="{{ url_for('users.login') }}">Entrar</a>
+        <a class="nav-item" href="{{ url_for('users.register') }}">Cadastrar</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="container">
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% if msgs %}
+        {% for cat, msg in msgs %}
+          <div class="flash">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

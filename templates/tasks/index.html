@@ -1,0 +1,162 @@
+﻿{% extends "base.html" %}
+{% block title %}Tarefas{% endblock %} {# Bloco title fechado aqui #}
+
+{% block content %} {# Bloco content iniciado #}
+<div class="card">
+  <h2 class="card-title">
+      <i data-feather="check-square" class="icon"></i>
+      Minhas Tarefas
+  </h2>
+
+  {# Controles de Filtro e Ordenação #}
+  <div class="task-controls">
+      <div class="control-group">
+          <span>Mostrar:</span>
+          <a href="{{ url_for('tasks.index', sort=current_sort, filter='pending') }}"
+             class="btn sm ghost {{ 'active' if current_filter == 'pending' else '' }}">Pendentes</a>
+          <a href="{{ url_for('tasks.index', sort=current_sort, filter='done') }}"
+             class="btn sm ghost {{ 'active' if current_filter == 'done' else '' }}">Concluídas</a>
+          <a href="{{ url_for('tasks.index', sort=current_sort, filter='all') }}"
+             class="btn sm ghost {{ 'active' if current_filter == 'all' else '' }}">Todas</a>
+      </div>
+      <div class="control-group">
+          <span>Ordenar por:</span>
+          <a href="{{ url_for('tasks.index', filter=current_filter, sort='priority') }}"
+             class="btn sm ghost {{ 'active' if current_sort == 'priority' else '' }}">Prioridade</a>
+          <a href="{{ url_for('tasks.index', filter=current_filter, sort='due_date') }}"
+             class="btn sm ghost {{ 'active' if current_sort == 'due_date' else '' }}">Prazo</a>
+          <a href="{{ url_for('tasks.index', filter=current_filter, sort='created') }}"
+             class="btn sm ghost {{ 'active' if current_sort == 'created' else '' }}">Criação</a>
+      </div>
+  </div>
+
+  {# Formulário de Adição #}
+  <details style="margin-bottom:16px" {% if not tasks and current_filter != 'all' %}open{% endif %}>
+    <summary class="btn" style="display:inline-block; cursor:pointer;">Adicionar Nova Tarefa</summary>
+    <div style="margin-top:12px; border-top: 1px solid var(--bd); padding-top: 16px;">
+      {% set task = None %}
+      {% set submit_label = "Adicionar Tarefa" %}
+      {% set form_action = url_for('tasks.add') %}
+      {% include "tasks/_form.html" %}
+    </div>
+  </details>
+
+  {# Lista de Tarefas #}
+  {% if tasks %}
+    <div class="list" id="task-list">
+      {% for t in tasks %} {# Loop iniciado #}
+        <div class="list-item" id="task-{{ t.id }}" style="align-items: flex-start; gap: 12px;">
+          <button class="btn sm task-toggle-btn {{ 'secondary' if t.done else 'ghost' }}"
+                  title="{{ 'Desfazer' if t.done else 'Concluir' }}"
+                  data-task-id="{{ t.id }}"
+                  data-toggle-url="{{ url_for('tasks.api_toggle', task_id=t.id) }}"
+                  style="margin-top: 4px;">
+            <i data-feather="{{ 'rotate-ccw' if t.done else 'check' }}" class="icon" style="width: 1em; height: 1em;"></i>
+          </button>
+
+          <div class="grow task-details {{ 'task-done' if t.done else '' }}" style="flex:1;">
+            <div class="strong task-title" style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+              <span class="priority-indicator priority-{{ t.priority }}" title="Prioridade: {{ 'Alta' if t.priority == 2 else ('Média' if t.priority == 1 else 'Baixa') }}"></span>
+              {{ t.title }}
+            </div>
+            {% if t.description %}
+              <p class="muted small task-description" style="margin:4px 0 0 0; white-space: pre-wrap;">{{ t.description }}</p>
+            {% endif %}
+            {% if t.due_date or t.completed_at %} {# Verifica se há prazo OU data de conclusão #}
+              {% set due_date_info = format_due_date(t.due_date, t.done, t.completed_at) %}
+              <small class="task-due-date {{ due_date_info.class }}" style="display: block; margin-top: 4px;">
+                {{ due_date_info.text }}
+              </small>
+            {% endif %}
+          </div>
+
+          <div class="row gap" style="padding-top: 4px;">
+            <a href="{{ url_for('tasks.edit', task_id=t.id) }}" class="btn sm secondary" title="Editar">
+                <i data-feather="edit-2" class="icon" style="width: 1em; height: 1em;"></i>
+            </a>
+          </div>
+        </div> {# Fim de .list-item #}
+      {% endfor %} {# <<<<<<< CORREÇÃO: ENDFOR ADICIONADO #} {# <- Comentário Fechado Corretamente #}
+    </div> {# Fim de .list #}
+  {% else %}
+      {# Empty State #}
+      <div class="empty-state">
+        <i data-feather="list" class="icon"></i>
+        <h3>Nenhuma Tarefa Encontrada</h3>
+        {% if current_filter == 'pending' %}
+          <p>Não há tarefas pendentes. Bom trabalho ou adicione uma nova!</p>
+        {% elif current_filter == 'done' %}
+           <p>Nenhuma tarefa concluída ainda. Marque uma como feita!</p>
+        {% else %}
+           <p>Parece que não há tarefas aqui. Adicione uma nova tarefa usando o botão acima!</p>
+        {% endif %} {# Fim do if current_filter #}
+      </div>
+  {% endif %} {# Fim do if tasks #}
+
+</div> {# Fim de .card #}
+{% endblock %} {# Fim do block content #}
+
+{% block scripts %} {# Bloco scripts iniciado #}
+<script>
+  // Ativa Feather Icons
+  feather.replace();
+
+  // --- JAVASCRIPT PARA TOGGLE AJAX ---
+  document.addEventListener('DOMContentLoaded', () => {
+    const taskList = document.getElementById('task-list');
+
+    if (taskList) {
+      taskList.addEventListener('click', async (event) => {
+        const toggleButton = event.target.closest('.task-toggle-btn');
+        if (!toggleButton) return;
+        event.preventDefault();
+        const taskId = toggleButton.dataset.taskId;
+        const toggleUrl = toggleButton.dataset.toggleUrl;
+        const listItem = document.getElementById(`task-${taskId}`);
+        const taskDetails = listItem ? listItem.querySelector('.task-details') : null;
+        const dateElement = listItem ? listItem.querySelector('.task-due-date') : null;
+        const iconElement = toggleButton.querySelector('i.icon');
+        if (!taskId || !toggleUrl || !listItem || !taskDetails || !iconElement) { console.error('Erro AJAX Toggle: Elementos não encontrados.'); return; }
+        toggleButton.disabled = true;
+        try {
+          const response = await fetch(toggleUrl, { method: 'POST', headers: {'Accept': 'application/json'} });
+          if (!response.ok) throw new Error(`Erro: ${response.statusText}`);
+          const result = await response.json();
+          if (result.success) {
+            const newState = result.new_state;
+            taskDetails.classList.toggle('task-done', newState);
+            toggleButton.classList.toggle('ghost', !newState);
+            toggleButton.classList.toggle('secondary', newState);
+            toggleButton.title = newState ? 'Desfazer' : 'Concluir';
+            const newIconName = newState ? 'rotate-ccw' : 'check';
+            // Atualiza o SVG do ícone diretamente
+             const svgString = feather.icons[newIconName].toSvg({'class': 'icon', 'style': 'width: 1em; height: 1em;'});
+             // Encontra o elemento SVG dentro do <i> e substitui, ou substitui o innerHTML do <i>
+             const existingSvg = iconElement.querySelector('svg');
+             if (existingSvg) {
+                 existingSvg.outerHTML = svgString;
+             } else {
+                 iconElement.innerHTML = svgString; // Fallback
+             }
+
+
+            if (dateElement) {
+                // Atualiza o texto e a classe com os dados da API
+                dateElement.textContent = result.new_date_text || '';
+                // Limpa classes de cor antigas
+                dateElement.classList.remove('due-date-default', 'due-date-future', 'due-date-done', 'due-date-overdue', 'due-date-today', 'due-date-soon');
+                // Adiciona a nova classe correta
+                if (result.new_date_class) {
+                    dateElement.classList.add(result.new_date_class);
+                }
+            }
+            // REMOVIDO: window.location.reload();
+
+          } else { alert(`Erro: ${result.error || 'Não foi possível atualizar.'}`); }
+        } catch (error) { console.error('Erro Fetch:', error); alert('Erro de comunicação.');
+        } finally { toggleButton.disabled = false; }
+      });
+    }
+  });
+</script>
+{% endblock %} {# Fim do block scripts #}

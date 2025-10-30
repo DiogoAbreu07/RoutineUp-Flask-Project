@@ -1,0 +1,58 @@
+﻿{# Usa a variável form_action definida ANTES do include no template pai #}
+<form method="post" action="{{ form_action or url_for('tasks.add') }}" class="form" novalidate>
+    {# Adicionado 'or url_for('tasks.add')' como fallback seguro, embora não deva ser necessário #}
+
+  <div class="field">
+    <label class="label" for="title">Título da tarefa</label>
+    <input class="input" id="title" name="title" type="text" maxlength="240" required
+           value="{{ (task.title if task else request.form.get('title',''))|default('') }}">
+    <div class="help">Seja específico. Ex.: “Enviar relatório do TCC”.</div>
+  </div>
+
+  {# ... resto do _form.html permanece igual ... #}
+  <div class="field">
+    <label class="label" for="description">Descrição (opcional)</label>
+    <textarea class="input" id="description" name="description" rows="4"
+              placeholder="Adicione mais detalhes, links, ou notas...">{{ (task.description if task else request.form.get('description',''))|default('') }}</textarea>
+    <div class="help">Detalhes adicionais sobre a tarefa.</div>
+  </div>
+
+  <div class="form-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+    <div class="field">
+      <label class="label" for="due_date">Prazo (opcional)</label>
+      <input class="input" id="due_date" name="due_date" type="date"
+             value="{{ (task.due_date.strftime('%Y-%m-%d') if task and task.due_date else request.form.get('due_date','')) }}">
+      <div class="help">Deixe em branco se não tiver prazo.</div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="priority">Prioridade</label>
+      <select class="input" id="priority" name="priority">
+        {% set current_priority = (task.priority if task else request.form.get('priority', 1))|int %}
+        <option value="0" {{ 'selected' if current_priority == 0 else '' }}>Baixa</option>
+        <option value="1" {{ 'selected' if current_priority == 1 else '' }}>Média</option>
+        <option value="2" {{ 'selected' if current_priority == 2 else '' }}>Alta</option>
+      </select>
+      <div class="help">Organize por importância.</div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="done">Status</label>
+      <select class="input" id="done" name="done">
+        <option value="0" {{ 'selected' if not task or not task.done else '' }}>Pendente</option>
+        <option value="1" {{ 'selected' if task and task.done else '' }}>Concluída</option>
+      </select>
+      <div class="help">Você pode marcar como concluída depois.</div>
+    </div>
+  </div>
+
+  <div class="actions" style="margin-top: 20px;">
+    <button class="btn btn-primary" type="submit">{{ submit_label or 'Salvar' }}</button>
+    <a class="btn btn-muted" href="{{ url_for('tasks.index') }}">Cancelar</a>
+    {% if task %}
+      <form method="post" action="{{ url_for('tasks.delete', task_id=task.id) }}" style="display: inline-block; margin-left: 8px;">
+          <button class="btn danger" type="submit" onclick="return confirm('Tem a certeza que deseja excluir esta tarefa?');">Excluir</button>
+      </form>
+    {% endif %}
+  </div>
+</form>

@@ -1,0 +1,9 @@
+﻿{% with msgs = get_flashed_messages(with_categories=true) %}
+  {% if msgs %}
+    <div class="stack" style="margin:8px 0 12px">
+      {% for cat, msg in msgs %}
+        <div class="alert {{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}

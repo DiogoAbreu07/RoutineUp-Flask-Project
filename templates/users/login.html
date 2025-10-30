@@ -1,0 +1,53 @@
+﻿{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="auth-shell card" style="border:none; padding:0">
+  <!-- Painel motivacional -->
+  <section class="auth-left">
+    <div class="mkt">
+      <h1>Organize seu dia.<br/>Transforme a sua vida.</h1>
+      <p>Planeje, priorize e conclua com o RoutineUp.</p>
+      <div class="auth-figure">
+        <div class="auth-gear"><i data-feather="settings"></i></div>
+        <div class="auth-gear"><i data-feather="trending-up"></i></div>
+        <div class="auth-gear"><i data-feather="clock"></i></div>
+        <div class="auth-gear"><i data-feather="check-circle"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Formulário -->
+  <section class="auth-right">
+    <div class="auth-card">
+      <div class="auth-title">Bem-vindo de volta!</div>
+      <p class="auth-sub">Acesse sua conta e comece o dia com clareza e foco.</p>
+
+      {% include "_partials/flash.html" %}
+
+      <form method="post" action="{{ url_for('users.login_post') }}">
+        <div class="form-row">
+          <label class="small muted" for="email">E-mail</label>
+          <input class="input" id="email" name="email" type="email" placeholder="voce@exemplo.com" required autofocus>
+        </div>
+
+        <div class="form-row">
+          <label class="small muted" for="password">Senha</label>
+          <input class="input" id="password" name="password" type="password" placeholder="••••••••" required>
+        </div>
+
+        <div class="remember-row">
+          <input type="checkbox" id="remember" name="remember" value="1">
+          <label for="remember" class="small muted">Lembrar de mim</label>
+        </div>
+
+        <button class="btn" type="submit" style="width:100%">Entrar</button>
+      </form>
+
+      <div class="hr-or"></div>
+      <p class="small muted">Não tem conta? <a href="{{ url_for('users.register') }}">Cadastre-se</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}
+

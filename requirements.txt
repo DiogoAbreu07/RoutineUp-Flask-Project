@@ -1,0 +1,8 @@
+# Ficheiro: requirements.txt
+flask
+flask_sqlalchemy
+flask_login
+flask_migrate
+flask_mail
+waitress
+alembic
