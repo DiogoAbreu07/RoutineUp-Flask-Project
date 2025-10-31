@@ -7,13 +7,9 @@
   <img src="https://img.shields.io/badge/SQLite-3-blue?style=for-the-badge&logo=sqlite" alt="SQLite">
 </div>
 
-API RESTful desenvolvida como parte do meu aprendizado em desenvolvimento Back-end com Python. O projeto implementa um sistema de gerenciamento de livros com autenticação de usuários baseada em Token JWT.
-
-API RESTful desenvolvida como parte do meu aprendizado em desenvolvimento Back-end com Python. O projeto implementa um sistema de gerenciamento de livros com autenticação de usuários baseada em Token JWT.
-
 Aplicação web completa para gestão de rotina e produtividade, desenvolvida em Flask. O projeto implementa um sistema modular para gestão de tarefas, metas e lembretes, com autenticação de utilizadores e um dashboard analítico. Este projeto foi originalmente desenvolvido como um Trabalho de Conclusão de Curso.
 
-##  trạng thái do Projeto
+##  Status do Projeto
 
 ✅ **Projeto Concluído (Versão 1.0)**
 
@@ -60,7 +56,7 @@ Siga os passos abaixo para executar o projeto localmente:
 * Python 3.10+
 * Git
 
-### 2. Clonar o Repositório
+### 2. Clonar o Repositório:
 
 ```bash
 git clone [https://github.com/TEU_NOME_DE_UTILIZADOR/routineup.git](https://github.com/TEU_NOME_DE_UTILIZADOR/routineup.git)
