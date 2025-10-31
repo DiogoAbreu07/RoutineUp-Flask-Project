@@ -49,12 +49,19 @@ Aplicação web completa para gestão de rotina e produtividade, desenvolvida em
 * **Ícones:** Feather Icons
 
 ---
+## 🚀 Instalação e Execução Local
 
 ## ▶️ Como Executar o Projeto
 
 Siga os passos abaixo para executar o projeto localmente:
 
-**1. Clone o repositório:**
+### 1. Pré-requisitos
+
+* Python 3.10+
+* Git
+
+### 2. Clonar o Repositório
+
 ```bash
-git clone [https://github.com/DiogoAbreu07/RoutineUp-Flask-Project.git](https://github.com/DiogoAbreu07/RoutineUp-Flask-Project.git)
-cd RoutineUp-Flask-Project
+git clone [https://github.com/TEU_NOME_DE_UTILIZADOR/routineup.git](https://github.com/TEU_NOME_DE_UTILIZADOR/routineup.git)
+cd routineup
