@@ -2,255 +2,351 @@
 {% block title %}Dashboard · RoutineUp{% endblock %}
 
 {% block content %}
-<div class="dashboard-wrapper">
+<div class="hub-premium">
   
-  <!-- Header com Saudação -->
-  <div class="dashboard-header-new">
-    <div class="greeting-section">
-      <h1 class="dashboard-greeting-new">{{ greeting }}, {{ first_name(current_user) }}! 👋</h1>
-      <p class="dashboard-date-new">{{ today_formatted }}</p>
-    </div>
-    <div class="productivity-score-wrapper">
-      <div class="score-circle-new">
-        <svg width="80" height="80" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(99, 102, 241, 0.15)" stroke-width="5"></circle>
-          <circle cx="40" cy="40" r="34" fill="none" stroke="url(#gradient-score)" stroke-width="5"
-                  stroke-dasharray="{{ 2 * 3.14159 * 34 }}"
-                  stroke-dashoffset="{{ 2 * 3.14159 * 34 * (1 - stats.productivity_score / 100) }}"
-                  stroke-linecap="round"
-                  transform="rotate(-90 40 40)"></circle>
-          <defs>
-            <linearGradient id="gradient-score" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#4F46E5;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <span class="score-text-new">{{ stats.productivity_score }}</span>
+  <!-- Hero Header -->
+  <div class="hero-header">
+    <div class="hero-content">
+      <div class="greeting-wrapper">
+        <h1 class="hero-greeting">{{ greeting }}, {{ first_name(current_user) }}! 👋</h1>
+        <p class="hero-date">{{ today_formatted }}</p>
       </div>
-      <span class="score-label-new">Produtividade</span>
+      
+      <!-- Score Circle Premium -->
+      <div class="score-premium">
+        <div class="score-ring">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#8B5CF6"/>
+                <stop offset="50%" style="stop-color:#6366f1"/>
+                <stop offset="100%" style="stop-color:#4F46E5"/>
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(99, 102, 241, 0.1)" stroke-width="8"></circle>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="url(#score-gradient)" stroke-width="8"
+                    stroke-dasharray="{{ 2 * 3.14159 * 42 }}"
+                    stroke-dashoffset="{{ 2 * 3.14159 * 42 * (1 - stats.productivity_score / 100) }}"
+                    stroke-linecap="round"
+                    transform="rotate(-90 50 50)"
+                    filter="url(#glow)"></circle>
+          </svg>
+          <div class="score-content">
+            <span class="score-number">{{ stats.productivity_score }}</span>
+            <span class="score-label">Score</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <a href="{{ url_for('tasks.index') }}" class="quick-btn">
+        <i data-feather="plus-circle"></i>
+        <span>Nova Tarefa</span>
+      </a>
+      <a href="{{ url_for('goals.index') }}" class="quick-btn">
+        <i data-feather="target"></i>
+        <span>Nova Meta</span>
+      </a>
+      <a href="{{ url_for('reminders.index') }}" class="quick-btn">
+        <i data-feather="bell"></i>
+        <span>Lembrete</span>
+      </a>
     </div>
   </div>
 
-  <!-- Grid de Estatísticas -->
-  <div class="stats-grid-new">
-    
-    <div class="stat-card-new stat-primary-new">
-      <div class="stat-icon-new">
-        <i data-feather="check-circle"></i>
+  <!-- Stats Grid Premium -->
+  <div class="stats-premium">
+    <div class="stat-box stat-today">
+      <div class="stat-header">
+        <div class="stat-icon-circle">
+          <i data-feather="check-circle"></i>
+        </div>
+        <span class="stat-trend">+{{ stats.tasks_completed_today }}</span>
       </div>
-      <div class="stat-content-new">
-        <div class="stat-value-new">{{ stats.tasks_completed_today }}</div>
-        <div class="stat-label-new">Hoje</div>
+      <div class="stat-body">
+        <div class="stat-number">{{ stats.tasks_completed_today }}</div>
+        <div class="stat-text">Concluídas Hoje</div>
       </div>
-    </div>
-
-    <div class="stat-card-new stat-warning-new">
-      <div class="stat-icon-new">
-        <i data-feather="clock"></i>
-      </div>
-      <div class="stat-content-new">
-        <div class="stat-value-new">{{ stats.pending_total }}</div>
-        <div class="stat-label-new">Pendentes</div>
-      </div>
-    </div>
-
-    <div class="stat-card-new stat-success-new">
-      <div class="stat-icon-new">🔥</div>
-      <div class="stat-content-new">
-        <div class="stat-value-new">{{ stats.streak }}</div>
-        <div class="stat-label-new">Dias Seguidos</div>
+      <div class="stat-footer">
+        <div class="stat-mini-chart">
+          <span style="height: 40%"></span>
+          <span style="height: 70%"></span>
+          <span style="height: 50%"></span>
+          <span style="height: 85%"></span>
+          <span style="height: 100%"></span>
+        </div>
       </div>
     </div>
 
-    <div class="stat-card-new stat-info-new">
-      <div class="stat-icon-new">
-        <i data-feather="trending-up"></i>
+    <div class="stat-box stat-pending">
+      <div class="stat-header">
+        <div class="stat-icon-circle">
+          <i data-feather="clock"></i>
+        </div>
       </div>
-      <div class="stat-content-new">
-        <div class="stat-value-new">{{ stats.completion_rate }}%</div>
-        <div class="stat-label-new">Conclusão</div>
+      <div class="stat-body">
+        <div class="stat-number">{{ stats.pending_total }}</div>
+        <div class="stat-text">Pendentes</div>
+      </div>
+      <div class="stat-progress">
+        <div class="progress-mini" style="width: {{ 100 - stats.completion_rate }}%"></div>
+      </div>
+    </div>
+
+    <div class="stat-box stat-streak">
+      <div class="stat-header">
+        <div class="stat-icon-circle stat-fire">
+          <span class="fire-emoji">🔥</span>
+        </div>
+      </div>
+      <div class="stat-body">
+        <div class="stat-number">{{ stats.streak }}</div>
+        <div class="stat-text">Dias Seguidos</div>
+      </div>
+      <div class="streak-badges">
+        {% set display_streak = stats.streak if stats.streak <= 7 else 7 %}
+        {% for i in range(display_streak) %}
+        <span class="streak-dot active"></span>
+        {% endfor %}
+        {% for i in range(7 - display_streak) %}
+        <span class="streak-dot"></span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="stat-box stat-rate">
+      <div class="stat-header">
+        <div class="stat-icon-circle">
+          <i data-feather="trending-up"></i>
+        </div>
+      </div>
+      <div class="stat-body">
+        <div class="stat-number">{{ stats.completion_rate }}%</div>
+        <div class="stat-text">Taxa de Conclusão</div>
+      </div>
+      <div class="circular-progress" style="--progress: {{ stats.completion_rate }}%">
+        <svg width="60" height="60">
+          <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"></circle>
+          <circle cx="30" cy="30" r="26" fill="none" stroke="#10b981" stroke-width="4"
+                  stroke-dasharray="163.36" 
+                  stroke-dashoffset="{{ 163.36 * (1 - stats.completion_rate / 100) }}"
+                  transform="rotate(-90 30 30)"></circle>
+        </svg>
       </div>
     </div>
 
     {% if stats.overdue_tasks > 0 %}
-    <div class="stat-card-new stat-danger-new">
-      <div class="stat-icon-new">
-        <i data-feather="alert-circle"></i>
+    <div class="stat-box stat-overdue">
+      <div class="stat-header">
+        <div class="stat-icon-circle stat-alert">
+          <i data-feather="alert-circle"></i>
+        </div>
       </div>
-      <div class="stat-content-new">
-        <div class="stat-value-new">{{ stats.overdue_tasks }}</div>
-        <div class="stat-label-new">Atrasadas</div>
+      <div class="stat-body">
+        <div class="stat-number">{{ stats.overdue_tasks }}</div>
+        <div class="stat-text">Atrasadas</div>
       </div>
+      <a href="{{ url_for('tasks.index', filter='pending', sort='due_date') }}" class="stat-action">
+        Ver todas →
+      </a>
     </div>
     {% endif %}
 
-    <div class="stat-card-new stat-purple-new">
-      <div class="stat-icon-new">
-        <i data-feather="target"></i>
+    <div class="stat-box stat-goals">
+      <div class="stat-header">
+        <div class="stat-icon-circle">
+          <i data-feather="target"></i>
+        </div>
       </div>
-      <div class="stat-content-new">
-        <div class="stat-value-new">{{ stats.active_goals }}</div>
-        <div class="stat-label-new">Metas Ativas</div>
+      <div class="stat-body">
+        <div class="stat-number">{{ stats.active_goals }}</div>
+        <div class="stat-text">Metas Ativas</div>
       </div>
     </div>
-
   </div>
 
-  <!-- Gráfico e Distribuição em Grid -->
-  <div class="analytics-grid">
+  <!-- Main Content Grid -->
+  <div class="content-grid">
     
-    <!-- Gráfico Semanal -->
-    <div class="card chart-card-new">
-      <h3 class="section-title">
-        <i data-feather="bar-chart-2" class="icon"></i>
-        Atividade Semanal
-      </h3>
-      <div class="chart-container-new">
-        <canvas id="weeklyChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Distribuição por Prioridade -->
-    <div class="card">
-      <h3 class="section-title">
-        <i data-feather="pie-chart" class="icon"></i>
-        Distribuição
-      </h3>
-      <div class="priority-bars-new">
-        {% set total_priority = stats.priority_distribution.low + stats.priority_distribution.medium + stats.priority_distribution.high %}
-        
-        <div class="priority-item-new">
-          <div class="priority-label-new">
-            <span class="priority-dot-new priority-high"></span>
-            <span>Alta</span>
-          </div>
-          <div class="priority-bar-bg-new">
-            <div class="priority-bar-fill-new priority-bar-high-new" 
-                 style="width: {{ (stats.priority_distribution.high / total_priority * 100) if total_priority > 0 else 0 }}%"></div>
-          </div>
-          <span class="priority-count-new">{{ stats.priority_distribution.high }}</span>
-        </div>
-
-        <div class="priority-item-new">
-          <div class="priority-label-new">
-            <span class="priority-dot-new priority-medium"></span>
-            <span>Média</span>
-          </div>
-          <div class="priority-bar-bg-new">
-            <div class="priority-bar-fill-new priority-bar-medium-new" 
-                 style="width: {{ (stats.priority_distribution.medium / total_priority * 100) if total_priority > 0 else 0 }}%"></div>
-          </div>
-          <span class="priority-count-new">{{ stats.priority_distribution.medium }}</span>
-        </div>
-
-        <div class="priority-item-new">
-          <div class="priority-label-new">
-            <span class="priority-dot-new priority-low"></span>
-            <span>Baixa</span>
-          </div>
-          <div class="priority-bar-bg-new">
-            <div class="priority-bar-fill-new priority-bar-low-new" 
-                 style="width: {{ (stats.priority_distribution.low / total_priority * 100) if total_priority > 0 else 0 }}%"></div>
-          </div>
-          <span class="priority-count-new">{{ stats.priority_distribution.low }}</span>
-        </div>
-
-        {% if total_priority == 0 %}
-        <p class="empty-message">Nenhuma tarefa pendente</p>
-        {% endif %}
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Duas Colunas: Timeline e Lateral -->
-  <div class="hub-grid">
-    
-    <!-- Coluna Principal: Timeline -->
-    <div>
-      <div class="card">
-        <h3 class="section-title">
-          <i data-feather="calendar" class="icon"></i>
-          Agenda de Hoje
-        </h3>
-        {% if timeline_items %}
-          <div class="timeline">
-            {% for item in timeline_items %}
-              <div class="timeline-item">
-                <div class="timeline-dot-icon {{ item.type }}">
-                  <i data-feather="{{ 'check-square' if item.type == 'task' else 'bell' }}" class="icon"></i>
-                </div>
-                <span class="timeline-time">{{ item.time.strftime('%H:%M') }}</span>
-                <div class="timeline-content">
-                  {% if item.type == 'task' %}
-                    <span class="priority-indicator priority-{{ item.obj.priority }}"></span>
-                    <a href="{{ url_for('tasks.edit', task_id=item.obj.id) }}">{{ item.obj.title }}</a>
-                  {% else %}
-                    <span>{{ item.obj.title }}</span>
-                  {% endif %}
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        {% else %}
-          <div class="empty-state">
-            <i data-feather="coffee" class="icon"></i>
-            <h3>Dia Livre!</h3>
-            <p>Nenhum compromisso agendado para hoje.</p>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Coluna Lateral -->
-    <div class="hub-side-column">
-      
-      <!-- Tarefas Atrasadas -->
-      {% if atrasadas %}
-      <div class="card alert-card-new">
-        <h3 class="section-title">
-          <i data-feather="alert-triangle" class="icon"></i>
-          Atrasadas ({{ atrasadas|length }})
-        </h3>
-        <div class="simple-list">
-          {% for task in atrasadas[:5] %}
-            <div class="list-item">
-              <span class="priority-indicator priority-{{ task.priority }}"></span>
-              <a href="{{ url_for('tasks.edit', task_id=task.id) }}" style="flex:1">{{ task.title }}</a>
-              <span class="task-date-overdue">{{ task.due_date.strftime('%d/%m') }}</span>
+    <!-- Chart Section -->
+    <div class="chart-section">
+      <div class="premium-card">
+        <div class="card-header-premium">
+          <div class="header-left">
+            <i data-feather="bar-chart-2" class="header-icon"></i>
+            <div>
+              <h3 class="card-title-premium">Atividade Semanal</h3>
+              <p class="card-subtitle">Últimos 7 dias</p>
             </div>
+          </div>
+          <div class="card-legend">
+            <span class="legend-item"><span class="legend-dot completed"></span>Concluídas</span>
+            <span class="legend-item"><span class="legend-dot created"></span>Criadas</span>
+          </div>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="weeklyChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Priority Distribution -->
+      <div class="premium-card priority-card">
+        <div class="card-header-premium">
+          <i data-feather="pie-chart" class="header-icon"></i>
+          <div>
+            <h3 class="card-title-premium">Distribuição por Prioridade</h3>
+            <p class="card-subtitle">Tarefas pendentes</p>
+          </div>
+        </div>
+        <div class="priority-list-premium">
+          {% set total = stats.priority_distribution.low + stats.priority_distribution.medium + stats.priority_distribution.high %}
+          
+          <div class="priority-row-premium">
+            <div class="priority-info">
+              <span class="priority-badge high">Alta</span>
+              <span class="priority-percent">{{ ((stats.priority_distribution.high / total * 100) if total > 0 else 0)|round|int }}%</span>
+            </div>
+            <div class="priority-bar-container">
+              <div class="priority-bar-animated high" style="width: {{ (stats.priority_distribution.high / total * 100) if total > 0 else 0 }}%"></div>
+            </div>
+            <span class="priority-value">{{ stats.priority_distribution.high }}</span>
+          </div>
+
+          <div class="priority-row-premium">
+            <div class="priority-info">
+              <span class="priority-badge medium">Média</span>
+              <span class="priority-percent">{{ ((stats.priority_distribution.medium / total * 100) if total > 0 else 0)|round|int }}%</span>
+            </div>
+            <div class="priority-bar-container">
+              <div class="priority-bar-animated medium" style="width: {{ (stats.priority_distribution.medium / total * 100) if total > 0 else 0 }}%"></div>
+            </div>
+            <span class="priority-value">{{ stats.priority_distribution.medium }}</span>
+          </div>
+
+          <div class="priority-row-premium">
+            <div class="priority-info">
+              <span class="priority-badge low">Baixa</span>
+              <span class="priority-percent">{{ ((stats.priority_distribution.low / total * 100) if total > 0 else 0)|round|int }}%</span>
+            </div>
+            <div class="priority-bar-container">
+              <div class="priority-bar-animated low" style="width: {{ (stats.priority_distribution.low / total * 100) if total > 0 else 0 }}%"></div>
+            </div>
+            <span class="priority-value">{{ stats.priority_distribution.low }}</span>
+          </div>
+
+          {% if total == 0 %}
+          <div class="empty-state-mini">
+            <span>🎉</span>
+            <p>Nenhuma tarefa pendente!</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline & Sidebar -->
+    <div class="timeline-section">
+      
+      <!-- Agenda -->
+      <div class="premium-card agenda-card">
+        <div class="card-header-premium">
+          <i data-feather="calendar" class="header-icon"></i>
+          <div>
+            <h3 class="card-title-premium">Agenda de Hoje</h3>
+            <p class="card-subtitle">{{ timeline_items|length }} compromisso(s)</p>
+          </div>
+        </div>
+        
+        {% if timeline_items %}
+        <div class="timeline-premium">
+          {% for item in timeline_items %}
+          <div class="timeline-entry">
+            <div class="timeline-marker {{ item.type }}">
+              <i data-feather="{{ 'check-square' if item.type == 'task' else 'bell' }}"></i>
+            </div>
+            <div class="timeline-time">{{ item.time.strftime('%H:%M') }}</div>
+            <div class="timeline-detail">
+              {% if item.type == 'task' %}
+                <span class="priority-dot priority-{{ item.obj.priority }}"></span>
+                <a href="{{ url_for('tasks.edit', task_id=item.obj.id) }}" class="timeline-title">{{ item.obj.title }}</a>
+              {% else %}
+                <span class="timeline-title">{{ item.obj.title }}</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-premium">
+          <div class="empty-icon">☕</div>
+          <h4>Dia Livre!</h4>
+          <p>Nenhum compromisso agendado</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Overdue Tasks -->
+      {% if atrasadas %}
+      <div class="premium-card alert-card-premium">
+        <div class="card-header-premium">
+          <i data-feather="alert-triangle" class="header-icon alert"></i>
+          <div>
+            <h3 class="card-title-premium">Tarefas Atrasadas</h3>
+            <p class="card-subtitle">{{ atrasadas|length }} tarefa(s)</p>
+          </div>
+        </div>
+        <div class="overdue-list">
+          {% for task in atrasadas[:5] %}
+          <div class="overdue-item">
+            <span class="priority-dot priority-{{ task.priority }}"></span>
+            <a href="{{ url_for('tasks.edit', task_id=task.id) }}" class="overdue-title">{{ task.title }}</a>
+            <span class="overdue-date">{{ task.due_date.strftime('%d/%m') }}</span>
+          </div>
           {% endfor %}
         </div>
         {% if atrasadas|length > 5 %}
-          <a href="{{ url_for('tasks.index', filter='pending', sort='due_date') }}" class="view-all-link-new">
-            Ver todas →
-          </a>
+        <a href="{{ url_for('tasks.index', filter='pending') }}" class="card-footer-link">
+          Ver todas ({{ atrasadas|length }}) →
+        </a>
         {% endif %}
       </div>
       {% endif %}
 
-      <!-- Metas -->
+      <!-- Goals -->
       {% if metas %}
-      <div class="card">
-        <h3 class="section-title">
-          <i data-feather="target" class="icon"></i>
-          Metas Recentes
-        </h3>
-        <div class="simple-list">
+      <div class="premium-card goals-card">
+        <div class="card-header-premium">
+          <i data-feather="target" class="header-icon"></i>
+          <div>
+            <h3 class="card-title-premium">Metas Recentes</h3>
+            <p class="card-subtitle">{{ metas|length }} ativa(s)</p>
+          </div>
+        </div>
+        <div class="goals-list-premium">
           {% for goal in metas %}
-            <div class="list-item" style="flex-direction: column; align-items: flex-start;">
-              <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 4px;">
-                <span style="font-weight: 600;">{{ goal.title }}</span>
-                <span style="color: var(--hi); font-weight: 700;">{{ goal.progress }}%</span>
-              </div>
-              <div class="progress-bar-wrapper" style="width: 100%;">
-                <div class="progress-bar" style="width: {{ goal.progress }}%"></div>
-              </div>
+          <div class="goal-item-premium">
+            <div class="goal-header-flex">
+              <span class="goal-title-premium">{{ goal.title }}</span>
+              <span class="goal-percentage">{{ goal.progress }}%</span>
             </div>
+            <div class="goal-progress-premium">
+              <div class="goal-fill" style="width: {{ goal.progress }}%"></div>
+            </div>
+          </div>
           {% endfor %}
         </div>
-        <a href="{{ url_for('goals.index') }}" class="view-all-link-new">Ver todas →</a>
+        <a href="{{ url_for('goals.index') }}" class="card-footer-link">
+          Ver todas →
+        </a>
       </div>
       {% endif %}
 
@@ -276,40 +372,58 @@
           {
             label: 'Concluídas',
             data: weeklyData.map(d => d.completed),
-            backgroundColor: 'rgba(139, 92, 246, 0.6)',
-            borderColor: 'rgba(139, 92, 246, 1)',
+            backgroundColor: (context) => {
+              const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, 300);
+              gradient.addColorStop(0, 'rgba(139, 92, 246, 0.8)');
+              gradient.addColorStop(1, 'rgba(139, 92, 246, 0.3)');
+              return gradient;
+            },
+            borderColor: '#8B5CF6',
             borderWidth: 2,
-            borderRadius: 8
+            borderRadius: 8,
+            borderSkipped: false
           },
           {
             label: 'Criadas',
             data: weeklyData.map(d => d.created),
-            backgroundColor: 'rgba(79, 70, 229, 0.4)',
-            borderColor: 'rgba(79, 70, 229, 1)',
+            backgroundColor: (context) => {
+              const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, 300);
+              gradient.addColorStop(0, 'rgba(79, 70, 229, 0.6)');
+              gradient.addColorStop(1, 'rgba(79, 70, 229, 0.2)');
+              return gradient;
+            },
+            borderColor: '#4F46E5',
             borderWidth: 2,
-            borderRadius: 8
+            borderRadius: 8,
+            borderSkipped: false
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
         plugins: {
           legend: {
-            display: true,
-            position: 'top',
-            labels: {
-              color: '#e5e7eb',
-              font: { size: 12, weight: '600' },
-              padding: 15
-            }
+            display: false
           },
           tooltip: {
             backgroundColor: 'rgba(15, 23, 42, 0.95)',
-            padding: 12,
-            borderRadius: 8,
-            borderColor: 'rgba(99, 102, 241, 0.3)',
-            borderWidth: 1
+            padding: 16,
+            borderRadius: 12,
+            borderColor: 'rgba(139, 92, 246, 0.5)',
+            borderWidth: 2,
+            titleColor: '#e5e7eb',
+            bodyColor: '#e5e7eb',
+            titleFont: { size: 14, weight: '700' },
+            bodyFont: { size: 13 },
+            displayColors: true,
+            boxWidth: 12,
+            boxHeight: 12,
+            boxPadding: 6
           }
         },
         scales: {
@@ -317,25 +431,56 @@
             beginAtZero: true,
             ticks: {
               stepSize: 1,
-              color: '#94a3b8'
+              color: '#64748b',
+              font: { size: 11, weight: '600' }
             },
             grid: {
-              color: 'rgba(99, 102, 241, 0.1)'
+              color: 'rgba(99, 102, 241, 0.08)',
+              drawBorder: false
+            },
+            border: {
+              display: false
             }
           },
           x: {
             ticks: {
-              color: '#94a3b8'
+              color: '#94a3b8',
+              font: { size: 11, weight: '600' }
             },
             grid: {
               display: false
+            },
+            border: {
+              display: false
             }
           }
+        },
+        animation: {
+          duration: 1000,
+          easing: 'easeInOutQuart'
         }
       }
     });
   }
 
   feather.replace();
+
+  // Animação de contadores
+  document.querySelectorAll('.stat-number').forEach(el => {
+    const target = parseInt(el.textContent);
+    if (isNaN(target)) return;
+    
+    let current = 0;
+    const increment = target / 50;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        el.textContent = target + (el.textContent.includes('%') ? '%' : '');
+        clearInterval(timer);
+      } else {
+        el.textContent = Math.floor(current) + (el.textContent.includes('%') ? '%' : '');
+      }
+    }, 20);
+  });
 </script>
 {% endblock %}

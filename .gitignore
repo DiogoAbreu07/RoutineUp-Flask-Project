@@ -23,3 +23,11 @@ __pycache__/
 # Ignora ficheiros de configuração de IDEs (ex: VS Code)
 .vscode/
 .idea/
+
+# Arquivo .gitignore
+.env
+*.env
+.env.local
+__pycache__/
+*.pyc
+*.db
