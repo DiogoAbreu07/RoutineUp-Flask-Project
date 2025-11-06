@@ -1,66 +1,807 @@
 ﻿{% extends "base.html" %}
-{% block title %}Metas{% endblock %}
+{% block title %}Metas · RoutineUp{% endblock %}
+
 {% block content %}
-<div class="card">
-  <h2 class="card-title">
-    <i data-feather="target" class="icon"></i>
-    Minhas Metas
-  </h2>
-
-  <details style="margin-bottom:16px" {% if not items %}open{% endif %}> {# Abrir por padrão se não houver metas #}
-      <summary class="btn" style="display:inline-block; cursor:pointer;">Adicionar Nova Meta</summary>
-      <div style="margin-top:12px; border-top: 1px solid var(--bd); padding-top: 16px;">
-          <form method="post" action="{{ url_for('goals.create') }}" class="row gap">
-            <input name="title" class="input" placeholder="Ex: Ler 12 livros este ano..." required style="flex-grow: 1;"/>
-            <button class="btn">Adicionar</button>
-          </form>
+<div class="page-premium">
+  
+  <!-- Page Header -->
+  <div class="page-header-premium">
+    <div class="page-title-section">
+      <div class="page-icon-wrapper goals">
+        <i data-feather="target" class="page-icon"></i>
       </div>
-  </details>
+      <div>
+        <h1 class="page-title-premium">Minhas Metas</h1>
+        <p class="page-subtitle">Defina objetivos e acompanhe seu progresso</p>
+      </div>
+    </div>
+    
+    <button onclick="document.getElementById('add-goal-modal').showModal()" class="btn-action-primary goals">
+      <i data-feather="plus-circle" class="icon"></i>
+      <span>Nova Meta</span>
+    </button>
+  </div>
 
-
-  <div class="list">
+  <!-- Goals List -->
+  {% if items %}
+  <div class="goals-list-premium">
     {% for g in items %}
-      <div class="list-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
-        <div class="row" style="justify-content: space-between; align-items: center;">
-          <span class="strong" style="font-size: 1.1rem;">{{ g.title }}</span>
-          <small class="muted">{{ g.progress }}%</small>
+    <div class="goal-card-premium {{ 'completed' if g.progress >= 100 else '' }}">
+      
+      <!-- Progress Ring -->
+      <div class="goal-progress-section">
+        <div class="goal-progress-ring">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(139, 92, 246, 0.1)" stroke-width="8"></circle>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="url(#goal-gradient-{{ g.id }})" stroke-width="8"
+                    stroke-dasharray="{{ 2 * 3.14159 * 42 }}"
+                    stroke-dashoffset="{{ 2 * 3.14159 * 42 * (1 - g.progress / 100) }}"
+                    stroke-linecap="round"
+                    transform="rotate(-90 50 50)">
+            </circle>
+            <defs>
+              <linearGradient id="goal-gradient-{{ g.id }}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#8B5CF6"/>
+                <stop offset="100%" style="stop-color:#6366f1"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="goal-percentage">{{ g.progress }}%</div>
+        </div>
+      </div>
+
+      <!-- Goal Content -->
+      <div class="goal-content-premium">
+        <div class="goal-header">
+          <h3 class="goal-title-premium">{{ g.title }}</h3>
+          
+          <!-- Status Badge -->
+          {% if g.progress >= 100 %}
+          <div class="goal-status-badge completed">
+            <i data-feather="check-circle" class="icon-xs"></i>
+            Concluída
+          </div>
+          {% elif g.progress >= 75 %}
+          <div class="goal-status-badge almost">
+            <i data-feather="zap" class="icon-xs"></i>
+            Quase lá
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- Progress Display -->
+        <div class="goal-progress-display">
+          <span class="current-value">{{ g.current_value|int }}</span>
+          <span class="separator">/</span>
+          <span class="target-value">{{ g.target_value|int }}</span>
+          {% if g.unit %}
+          <span class="unit-label">{{ g.unit }}</span>
+          {% endif %}
         </div>
 
-        <div class="progress-bar-wrapper">
-          <div class="progress-bar" style="width: {{ g.progress }}%;"></div>
+        <!-- Progress Bar -->
+        <div class="goal-progress-bar-wrapper">
+          <div class="goal-progress-bar-fill" style="width: {{ g.progress }}%"></div>
         </div>
 
-        <div class="row gap" style="margin-top: 8px; justify-content: space-between; align-items: center;"> {# space-between para separar progresso da exclusão #}
-          {# Formulário de Progresso (mais compacto) #}
-          <form method="post" action="{{ url_for('goals.progress', id=g.id) }}" class="row gap small" style="flex-grow: 1; justify-content: flex-end;"> {# Alinha à direita #}
-            <label for="progress-{{g.id}}" class="muted small" style="white-space: nowrap;">Progresso:</label>
-            <input type="number" id="progress-{{g.id}}" min="0" max="100" name="progress" value="{{ g.progress }}" class="input sm" style="width: 70px; padding: 6px 8px; font-size: 0.8rem;">
-            <button class="btn sm" type="submit" title="Salvar Progresso">
-               <i data-feather="save" class="icon" style="width: 1em; height: 1em;"></i> {# Ícone Salvar #}
-            </button>
-          </form>
-
-          {# Formulário de Exclusão (apenas botão de ícone) #}
-          <form method="post" action="{{ url_for('goals.delete', id=g.id) }}" style="margin-left: 8px;" onsubmit="return confirm('Tem a certeza que deseja excluir esta meta?');">
-            <button class="btn sm danger" type="submit" title="Excluir Meta">
-               <i data-feather="trash-2" class="icon" style="width: 1em; height: 1em;"></i> {# Ícone Excluir #}
+        <!-- Actions -->
+        <div class="goal-actions-premium">
+          <button onclick="addProgress({{ g.id }}, 1)" class="goal-action-btn add" title="Adicionar 1 {{ g.unit }}">
+            <i data-feather="plus" class="icon"></i>
+          </button>
+          <button onclick="openEditModal({{ g.id }})" class="goal-action-btn edit" title="Editar meta">
+            <i data-feather="edit-2" class="icon"></i>
+          </button>
+          <form method="post" 
+                action="{{ url_for('goals.delete', id=g.id) }}" 
+                onsubmit="return confirm('Excluir meta \'{{ g.title }}\'?');"
+                class="inline-form">
+            <button type="submit" class="goal-action-btn delete" title="Excluir">
+              <i data-feather="trash-2" class="icon"></i>
             </button>
           </form>
         </div>
       </div>
-    {% else %}
-      <div class="empty-state">
-        <i data-feather="target" class="icon"></i>
-        <h3>Nenhuma Meta Definida</h3>
-        <p>Defina objetivos claros para se manter motivado. Adicione sua primeira meta usando o botão acima!</p>
-      </div>
+    </div>
     {% endfor %}
   </div>
+  {% else %}
+  <div class="empty-state-large">
+    <div class="empty-illustration goals">
+      <i data-feather="target" class="icon-huge"></i>
+    </div>
+    <h2>Nenhuma Meta Definida</h2>
+    <p>Defina objetivos claros para se manter motivado e focado!</p>
+    <button onclick="document.getElementById('add-goal-modal').showModal()" class="btn-action-primary goals">
+      <i data-feather="plus-circle" class="icon"></i>
+      Criar Primeira Meta
+    </button>
+  </div>
+  {% endif %}
+
 </div>
+
+<!-- Add Goal Modal -->
+<dialog id="add-goal-modal" class="modal-premium">
+  <div class="modal-header">
+    <h2>Nova Meta</h2>
+    <button onclick="this.closest('dialog').close()" class="modal-close">
+      <i data-feather="x"></i>
+    </button>
+  </div>
+  
+  <form method="post" action="{{ url_for('goals.create') }}" class="modal-form">
+    <div class="form-field">
+      <label for="title">Título da Meta</label>
+      <input type="text" 
+             id="title" 
+             name="title" 
+             class="input-premium" 
+             placeholder="Ex: Ler 12 livros em 2025"
+             required 
+             autofocus>
+      <small class="field-hint">Seja específico sobre o que quer alcançar</small>
+    </div>
+    
+    <div class="form-row-2">
+      <div class="form-field">
+        <label for="target_value">Valor da Meta</label>
+        <input type="number" 
+               id="target_value" 
+               name="target_value" 
+               class="input-premium" 
+               placeholder="12"
+               min="0"
+               step="0.01"
+               required>
+        <small class="field-hint">Objetivo a alcançar</small>
+      </div>
+      
+      <div class="form-field">
+        <label for="unit">Unidade</label>
+        <input type="text" 
+               id="unit" 
+               name="unit" 
+               class="input-premium" 
+               placeholder="livros"
+               list="unit-suggestions">
+        <datalist id="unit-suggestions">
+          <option value="livros">
+          <option value="km">
+          <option value="ml">
+          <option value="horas">
+          <option value="dias">
+          <option value="vezes">
+        </datalist>
+        <small class="field-hint">Ex: livros, km, ml</small>
+      </div>
+    </div>
+    
+    <div class="form-field">
+      <label for="current_value">Progresso Inicial (Opcional)</label>
+      <input type="number" 
+             id="current_value" 
+             name="current_value" 
+             class="input-premium" 
+             placeholder="0"
+             min="0"
+             step="0.01"
+             value="0">
+      <small class="field-hint">Se já começou, informe aqui</small>
+    </div>
+    
+    <div class="modal-actions">
+      <button type="submit" class="btn-primary">
+        <i data-feather="target" class="icon"></i>
+        Criar Meta
+      </button>
+      <button type="button" onclick="this.closest('dialog').close()" class="btn-ghost">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Edit Goal Modal -->
+<dialog id="edit-goal-modal" class="modal-premium">
+  <div class="modal-header">
+    <h2>Editar Meta</h2>
+    <button onclick="this.closest('dialog').close()" class="modal-close">
+      <i data-feather="x"></i>
+    </button>
+  </div>
+  
+  <form id="edit-goal-form" method="post" class="modal-form">
+    <input type="hidden" id="edit-goal-id" name="goal_id">
+    
+    <div class="form-field">
+      <label for="edit-title">Título da Meta</label>
+      <input type="text" 
+             id="edit-title" 
+             name="title" 
+             class="input-premium" 
+             required>
+    </div>
+    
+    <div class="form-row-2">
+      <div class="form-field">
+        <label for="edit-target">Valor da Meta</label>
+        <input type="number" 
+               id="edit-target" 
+               name="target_value" 
+               class="input-premium" 
+               min="0"
+               step="0.01"
+               required>
+      </div>
+      
+      <div class="form-field">
+        <label for="edit-unit">Unidade</label>
+        <input type="text" 
+               id="edit-unit" 
+               name="unit" 
+               class="input-premium">
+      </div>
+    </div>
+    
+    <div class="form-field">
+      <label for="edit-current">Progresso Atual</label>
+      <input type="number" 
+             id="edit-current" 
+             name="current_value" 
+             class="input-premium" 
+             min="0"
+             step="0.01"
+             required>
+    </div>
+    
+    <div class="modal-actions">
+      <button type="submit" class="btn-primary">
+        <i data-feather="save" class="icon"></i>
+        Salvar Alterações
+      </button>
+      <button type="button" onclick="this.closest('dialog').close()" class="btn-ghost">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<style>
+/* Page Premium */
+.page-premium {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header-premium {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.page-title-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-icon-wrapper.goals {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #8B5CF6, #6366f1);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.page-icon {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.page-title-premium {
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0;
+  color: #e5e7eb;
+}
+
+.page-subtitle {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  margin: 4px 0 0 0;
+}
+
+.btn-action-primary.goals {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #8B5CF6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.btn-action-primary.goals:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.5);
+}
+
+/* Goals List */
+.goals-list-premium {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.goal-card-premium {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  border-left: 4px solid #8B5CF6;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.goal-card-premium:hover {
+  transform: translateX(4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.goal-card-premium.completed {
+  border-left-color: #10b981;
+  opacity: 0.8;
+}
+
+/* Progress Ring */
+.goal-progress-section {
+  flex-shrink: 0;
+}
+
+.goal-progress-ring {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.goal-percentage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #8B5CF6;
+}
+
+.goal-card-premium.completed .goal-percentage {
+  color: #10b981;
+}
+
+/* Goal Content */
+.goal-content-premium {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.goal-title-premium {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e5e7eb;
+  margin: 0;
+  line-height: 1.3;
+  flex: 1;
+}
+
+/* Status Badge */
+.goal-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.goal-status-badge.completed {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.goal-status-badge.almost {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.goal-status-badge .icon-xs {
+  width: 12px;
+  height: 12px;
+}
+
+/* Progress Display */
+.goal-progress-display {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.current-value {
+  font-size: 1.75rem;
+  color: #8B5CF6;
+  line-height: 1;
+}
+
+.separator {
+  font-size: 1.25rem;
+  color: var(--muted, #64748b);
+  opacity: 0.5;
+}
+
+.target-value {
+  font-size: 1.25rem;
+  color: var(--muted, #64748b);
+  line-height: 1;
+}
+
+.unit-label {
+  font-size: 0.95rem;
+  color: var(--muted, #94a3b8);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+/* Progress Bar */
+.goal-progress-bar-wrapper {
+  width: 100%;
+  height: 8px;
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.goal-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8B5CF6, #6366f1);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.goal-card-premium.completed .goal-progress-bar-fill {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+/* Actions */
+.goal-actions-premium {
+  display: flex;
+  gap: 8px;
+}
+
+.goal-action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.goal-action-btn.add {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.goal-action-btn.add:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: scale(1.05);
+}
+
+.goal-action-btn.edit:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.goal-action-btn.delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.goal-action-btn .icon {
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+}
+
+.goal-action-btn.add .icon {
+  color: #a78bfa;
+}
+
+.goal-action-btn.delete:hover .icon {
+  color: #fca5a5;
+}
+
+.inline-form {
+  display: inline;
+  margin: 0;
+}
+
+/* Empty State */
+.empty-state-large {
+  text-align: center;
+  padding: 80px 40px;
+}
+
+.empty-illustration.goals {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(79, 70, 229, 0.1));
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-huge {
+  width: 64px;
+  height: 64px;
+  color: #8B5CF6;
+}
+
+.empty-state-large h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #e5e7eb;
+  margin: 0 0 12px 0;
+}
+
+.empty-state-large p {
+  font-size: 1.1rem;
+  color: #94a3b8;
+  margin: 0 0 32px 0;
+}
+
+/* Modal */
+.modal-premium {
+  max-width: 600px;
+  width: 90%;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+}
+
+.modal-premium::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #e5e7eb;
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.modal-form {
+  padding: 28px;
+}
+
+.form-field {
+  margin-bottom: 20px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-bottom: 8px;
+}
+
+.input-premium {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #e5e7eb;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.input-premium:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(139, 92, 246, 0.5);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.field-hint {
+  display: block;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 6px;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #8B5CF6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.btn-ghost {
+  padding: 12px 24px;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+}
+
+.icon-xs {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 768px) {
+  .page-header-premium {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .goal-card-premium {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .goal-progress-section {
+    align-self: center;
+  }
+  
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  feather.replace() // Garante que os ícones sejam renderizados
+  feather.replace();
+  
+  // Adicionar progresso via AJAX
+  function addProgress(goalId, increment) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/goals/add-progress/${goalId}`;
+    
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'increment';
+    input.value = increment;
+    
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+  }
+  
+  // Abrir modal de edição com dados
+  const goalsData = {{ items|tojson|safe if items else '[]' }};
+  
+  function openEditModal(goalId) {
+    const goal = goalsData.find(g => g.id === goalId);
+    if (!goal) return;
+    
+    document.getElementById('edit-goal-id').value = goal.id;
+    document.getElementById('edit-title').value = goal.title;
+    document.getElementById('edit-target').value = goal.target_value;
+    document.getElementById('edit-current').value = goal.current_value;
+    document.getElementById('edit-unit').value = goal.unit || '';
+    
+    document.getElementById('edit-goal-form').action = `/goals/update/${goalId}`;
+    document.getElementById('edit-goal-modal').showModal();
+  }
 </script>
 {% endblock %}

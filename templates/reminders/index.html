@@ -1,61 +1,423 @@
 ﻿{% extends "base.html" %}
-{% block title %}Lembretes{% endblock %}
+{% block title %}Lembretes · RoutineUp{% endblock %}
+
 {% block content %}
-<div class="card">
-  <h2 class="card-title">
-      <i data-feather="bell" class="icon"></i> Lembretes
-  </h2>
-
-  <details style="margin-bottom:16px" {% if not items %}open{% endif %}> {# Abrir por padrão se não houver lembretes #}
-      <summary class="btn" style="display:inline-block; cursor:pointer;">Adicionar Novo Lembrete</summary>
-      <div style="margin-top:12px; border-top: 1px solid var(--bd); padding-top: 16px;">
-         <form method="post" action="{{ url_for('reminders.create') }}" class="row gap" style="flex-wrap: wrap;"> {# Adicionado flex-wrap #}
-           <input name="title" class="input" placeholder="Lembrete..." required style="flex-grow: 1; min-width: 200px;"/>
-           <input type="datetime-local" name="remind_at" class="input" required style="min-width: 220px;" />
-           <button class="btn" type="submit">Adicionar</button>
-         </form>
+<div class="page-premium">
+  
+  <!-- Page Header -->
+  <div class="page-header-premium">
+    <div class="page-title-section">
+      <div class="page-icon-wrapper reminders">
+        <i data-feather="bell" class="page-icon"></i>
       </div>
-  </details>
+      <div>
+        <h1 class="page-title-premium">Lembretes</h1>
+        <p class="page-subtitle">Nunca perca um compromisso importante</p>
+      </div>
+    </div>
+    
+    <button onclick="document.getElementById('add-reminder-modal').showModal()" class="btn-action-primary reminders">
+      <i data-feather="plus-circle" class="icon"></i>
+      <span>Novo Lembrete</span>
+    </button>
+  </div>
 
-
-  <div class="list">
+  <!-- Reminders Timeline -->
+  {% if items %}
+  <div class="reminders-timeline-premium">
     {% for r in items %}
-      <div class="list-item" style="gap: 10px;"> {# Ajustado gap #}
-        <div class="grow">
-          {# Adiciona estilo de concluído se r.done for verdadeiro #}
-          <div class="strong task-details {{ 'task-done' if r.done else '' }}">
-              <span class="task-title">{{ r.title }}</span> {# Usa classes de task para consistência #}
-          </div>
-          <small class="muted task-due-date {{ 'due-date-done' if r.done else 'due-date-soon' }}" style="margin-top: 2px; display: block;"> {# Usa classes de task para consistência #}
-             Lembrar em: {{ r.remind_at.strftime("%d/%m/%Y %H:%M") }}
-          </small>
+    <div class="reminder-card-premium {{ 'done' if r.done else '' }}">
+      
+      <!-- Time Badge -->
+      <div class="reminder-time-badge">
+        <i data-feather="clock" class="icon-xs"></i>
+        <span>{{ r.remind_at.strftime("%H:%M") }}</span>
+      </div>
+
+      <!-- Reminder Content -->
+      <div class="reminder-content-premium">
+        <div class="reminder-icon-wrapper {{ 'done' if r.done else '' }}">
+          <i data-feather="bell" class="icon"></i>
         </div>
-        {# Botão Toggle com Ícone #}
-        <form method="post" action="{{ url_for('reminders.toggle', id=r.id) }}">
-          <button class="btn sm {{ 'secondary' if r.done else 'ghost' }}" type="submit" title="{{ 'Desfazer' if r.done else 'Marcar como visto' }}">
-              <i data-feather="{{ 'rotate-ccw' if r.done else 'check' }}" class="icon"></i>
+        
+        <div class="reminder-text">
+          <h3 class="reminder-title-premium {{ 'completed' if r.done else '' }}">
+            {{ r.title }}
+          </h3>
+          <p class="reminder-date">
+            <i data-feather="calendar" class="icon-xs"></i>
+            {{ r.remind_at.strftime("%d/%m/%Y às %H:%M") }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="reminder-actions-premium">
+        <form method="post" action="{{ url_for('reminders.toggle', id=r.id) }}" class="inline-form">
+          <button type="submit" 
+                  class="reminder-action-btn toggle {{ 'checked' if r.done else '' }}" 
+                  title="{{ 'Desfazer' if r.done else 'Marcar como visto' }}">
+            <i data-feather="{{ 'rotate-ccw' if r.done else 'check' }}" class="icon"></i>
           </button>
         </form>
-        {# Botão Excluir com Ícone #}
-        <form method="post" action="{{ url_for('reminders.delete', id=r.id) }}" onsubmit="return confirm('Tem a certeza que deseja excluir este lembrete?');">
-          <button class="btn sm danger" type="submit" title="Excluir Lembrete">
-              <i data-feather="trash-2" class="icon"></i>
+        
+        <form method="post" 
+              action="{{ url_for('reminders.delete', id=r.id) }}" 
+              onsubmit="return confirm('Excluir lembrete?');"
+              class="inline-form">
+          <button type="submit" class="reminder-action-btn danger" title="Excluir">
+            <i data-feather="trash-2" class="icon"></i>
           </button>
         </form>
       </div>
-    {% else %}
-      <div class="empty-state">
-        <i data-feather="bell-off" class="icon"></i> {# Ícone diferente para vazio #}
-        <h3>Sem Lembretes Agendados</h3>
-        <p>Não perca compromissos importantes. Adicione um lembrete usando o botão acima!</p>
+
+      <!-- Status Indicator -->
+      {% if r.done %}
+      <div class="reminder-status-badge done">
+        <i data-feather="check-circle" class="icon-xs"></i>
+        Visto
       </div>
+      {% elif r.remind_at < now %}
+      <div class="reminder-status-badge overdue">
+        <i data-feather="alert-circle" class="icon-xs"></i>
+        Atrasado
+      </div>
+      {% endif %}
+    </div>
     {% endfor %}
   </div>
+  {% else %}
+  <div class="empty-state-large">
+    <div class="empty-illustration reminders">
+      <i data-feather="bell" class="icon-huge"></i>
+    </div>
+    <h2>Nenhum Lembrete Agendado</h2>
+    <p>Nunca perca compromissos importantes! Crie seu primeiro lembrete.</p>
+    <button onclick="document.getElementById('add-reminder-modal').showModal()" class="btn-action-primary reminders">
+      <i data-feather="plus-circle" class="icon"></i>
+      Criar Lembrete
+    </button>
+  </div>
+  {% endif %}
+
 </div>
+
+<!-- Add Reminder Modal -->
+<dialog id="add-reminder-modal" class="modal-premium">
+  <div class="modal-header">
+    <h2>Novo Lembrete</h2>
+    <button onclick="this.closest('dialog').close()" class="modal-close">
+      <i data-feather="x"></i>
+    </button>
+  </div>
+  
+  <form method="post" action="{{ url_for('reminders.create') }}" class="modal-form">
+    <div class="form-field">
+      <label for="title">Título</label>
+      <input type="text" 
+             id="title" 
+             name="title" 
+             class="input-premium" 
+             placeholder="Ex: Reunião com cliente..."
+             required 
+             autofocus>
+    </div>
+    
+    <div class="form-field">
+      <label for="remind_at">Data e Hora</label>
+      <input type="datetime-local" 
+             id="remind_at" 
+             name="remind_at" 
+             class="input-premium"
+             required>
+      <small class="field-hint">Quando você deseja ser lembrado?</small>
+    </div>
+    
+    <div class="modal-actions">
+      <button type="submit" class="btn-primary">
+        <i data-feather="bell" class="icon"></i>
+        Criar Lembrete
+      </button>
+      <button type="button" onclick="this.closest('dialog').close()" class="btn-ghost">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<style>
+/* Reminders specific colors */
+.page-icon-wrapper.reminders {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.btn-action-primary.reminders {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.empty-illustration.reminders {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+}
+
+/* Timeline */
+.reminders-timeline-premium {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.reminder-card-premium {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-left: 4px solid #f59e0b;
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reminder-card-premium:hover {
+  transform: translateX(4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.reminder-card-premium.done {
+  opacity: 0.6;
+  border-left-color: #10b981;
+}
+
+/* Time Badge */
+.reminder-time-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+
+.reminder-time-badge .icon-xs {
+  width: 20px;
+  height: 20px;
+  color: #fbbf24;
+  margin-bottom: 6px;
+}
+
+.reminder-time-badge span {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fbbf24;
+}
+
+.reminder-card-premium.done .reminder-time-badge {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.reminder-card-premium.done .reminder-time-badge .icon-xs,
+.reminder-card-premium.done .reminder-time-badge span {
+  color: #6ee7b7;
+}
+
+/* Content */
+.reminder-content-premium {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.reminder-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: rgba(245, 158, 11, 0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.reminder-icon-wrapper.done {
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.reminder-icon-wrapper .icon {
+  width: 24px;
+  height: 24px;
+  color: #fbbf24;
+}
+
+.reminder-icon-wrapper.done .icon {
+  color: #6ee7b7;
+}
+
+.reminder-text {
+  flex: 1;
+}
+
+.reminder-title-premium {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e5e7eb;
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+}
+
+.reminder-title-premium.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.reminder-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.reminder-date .icon-xs {
+  width: 14px;
+  height: 14px;
+}
+
+/* Actions */
+.reminder-actions-premium {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.reminder-action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reminder-action-btn.toggle {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.reminder-action-btn.toggle.checked {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: #10b981;
+}
+
+.reminder-action-btn.toggle:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+}
+
+.reminder-action-btn.toggle.checked:hover {
+  transform: scale(1.05);
+}
+
+.reminder-action-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.reminder-action-btn .icon {
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+}
+
+.reminder-action-btn.toggle .icon {
+  color: #fbbf24;
+}
+
+.reminder-action-btn.toggle.checked .icon {
+  color: white;
+}
+
+.reminder-action-btn.danger:hover .icon {
+  color: #fca5a5;
+}
+
+/* Status Badge */
+.reminder-status-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.reminder-status-badge.done {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.reminder-status-badge.overdue {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.reminder-status-badge .icon-xs {
+  width: 12px;
+  height: 12px;
+}
+
+@media (max-width: 768px) {
+  .reminder-card-premium {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .reminder-time-badge {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 12px;
+    height: auto;
+  }
+  
+  .reminder-time-badge .icon-xs {
+    margin-bottom: 0;
+    margin-right: 8px;
+  }
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  feather.replace() // Garante que os ícones sejam renderizados
+  feather.replace();
+  
+  // Set min datetime to now
+  const datetimeInput = document.getElementById('remind_at');
+  if (datetimeInput) {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    datetimeInput.min = now.toISOString().slice(0, 16);
+  }
 </script>
 {% endblock %}

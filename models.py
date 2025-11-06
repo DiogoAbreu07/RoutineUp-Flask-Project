@@ -44,14 +44,25 @@ class Task(db.Model):
     completed_at = db.Column(db.DateTime, nullable=True) # Guarda quando foi concluída
     # --- FIM NOVA COLUNA ---
 
-class Goal(db.Model): # Removido UserMixin desnecessário
-    __tablename__ = "goal"
+class Goal(db.Model):
+    __tablename__ = 'goal'
+    
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), index=True, nullable=False)
-    title = db.Column(db.String(255), nullable=False)
-    progress = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
-    created_at = db.Column(db.DateTime, nullable=False, server_default=func.now())
-    due_date = db.Column(db.Date)
+    title = db.Column(db.String(200), nullable=False)
+    
+    target_value = db.Column(db.Float, nullable=False, default=100.0)
+    current_value = db.Column(db.Float, nullable=False, default=0.0)
+    unit = db.Column(db.String(50), default='')
+    
+    progress = db.Column(db.Integer, default=0)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def update_progress(self):
+        if self.target_value > 0:
+            self.progress = int((self.current_value / self.target_value) * 100)
+            if self.progress > 100:
+                self.progress = 100
 
 class Reminder(db.Model): # Removido UserMixin desnecessário
     __tablename__ = "reminder"

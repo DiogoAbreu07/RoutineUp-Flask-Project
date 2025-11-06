@@ -17,34 +17,81 @@
   {% set ep = request.endpoint or '' %}
 
   <aside class="sidebar">
-     <div class="brand"><a href="{{ url_or('hub.index', url_or('tasks.index', url_for('users.login'))) }}">RoutineUp</a></div>
-     <nav class="nav">
-       <a class="nav-item {{ 'active' if ep.startswith('hub.') else '' }}" href="{{ url_or('hub.index', url_or('tasks.index', url_for('users.login'))) }}"><i data-feather="home" class="icon"></i><span class="nav-text">Início</span></a>
-       <a class="nav-item {{ 'active' if ep.startswith('tasks.') else '' }}" href="{{ url_for('tasks.index') }}"><i data-feather="check-square" class="icon"></i><span class="nav-text">Tarefas</span></a>
-       {% if has_endpoint('goals.index') %}<a class="nav-item {{ 'active' if ep.startswith('goals.') else '' }}" href="{{ url_for('goals.index') }}"><i data-feather="target" class="icon"></i><span class="nav-text">Metas</span></a>{% endif %}
-       {% if has_endpoint('reminders.index') %}<a class="nav-item {{ 'active' if ep.startswith('reminders.') else '' }}" href="{{ url_for('reminders.index') }}"><i data-feather="clock" class="icon"></i><span class="nav-text">Lembretes</span></a>{% endif %}
-     </nav>
+     <div class="brand">
+       <a href="{{ url_or('hub.index', url_or('tasks.index', url_for('users.login'))) }}">RoutineUp</a>
+     </div>
+     
+     <div class="sidebar-section">
+       <nav class="nav">
+         <a class="nav-item {{ 'active' if ep.startswith('hub.') else '' }}" href="{{ url_or('hub.index', url_or('tasks.index', url_for('users.login'))) }}">
+           <i data-feather="home" class="icon"></i>
+           <span class="nav-text">Início</span>
+         </a>
+         
+         <a class="nav-item {{ 'active' if ep.startswith('tasks.') else '' }}" href="{{ url_for('tasks.index') }}">
+           <i data-feather="check-square" class="icon"></i>
+           <span class="nav-text">Tarefas</span>
+         </a>
+         
+         {% if has_endpoint('goals.index') %}
+         <a class="nav-item {{ 'active' if ep.startswith('goals.') else '' }}" href="{{ url_for('goals.index') }}">
+           <i data-feather="target" class="icon"></i>
+           <span class="nav-text">Metas</span>
+         </a>
+         {% endif %}
+         
+         {% if has_endpoint('reminders.index') %}
+         <a class="nav-item {{ 'active' if ep.startswith('reminders.') else '' }}" href="{{ url_for('reminders.index') }}">
+           <i data-feather="clock" class="icon"></i>
+           <span class="nav-text">Lembretes</span>
+         </a>
+         {% endif %}
+       </nav>
+     </div>
+     
      {% if current_user.is_authenticated and has_endpoint('backup.backup') and has_endpoint('backup.restore') %}
-     <div class="backup-restore">
-         <span class="backup-title nav-text">Backup / Restauro</span>
-         <a href="{{ url_for('backup.backup') }}" class="nav-item backup-action" title="Fazer Backup"><i data-feather="download" class="icon"></i><span class="nav-text">Fazer Backup</span></a>
+     <div class="sidebar-section backup-restore">
+         <div class="section-label">
+           <i data-feather="database" class="icon-xs"></i>
+           BACKUP & RESTAURO
+         </div>
+         
+         <a href="{{ url_for('backup.backup') }}" class="nav-item backup-action" title="Fazer Backup">
+           <i data-feather="download" class="icon"></i>
+           <span class="nav-text">Fazer Backup</span>
+         </a>
+         
          <form action="{{ url_for('backup.restore') }}" method="post" enctype="multipart/form-data" class="backup-action">
-             <label for="restore-file" class="nav-item" title="Restaurar Backup"><i data-feather="upload" class="icon"></i><span class="nav-text">Restaurar</span></label>
-             <input type="file" name="file" id="restore-file" accept=".db,.sqlite,.sqlite3" style="display: none;" onchange="if(this.value) { if(confirm('Atenção: Restaurar um backup substituirá TODOS os dados atuais. Deseja continuar?')) { this.form.submit(); } else { this.value=null; } }">
+             <label for="restore-file" class="nav-item" title="Restaurar Backup">
+               <i data-feather="upload" class="icon"></i>
+               <span class="nav-text">Restaurar</span>
+             </label>
+             <input type="file" 
+                    name="file" 
+                    id="restore-file" 
+                    accept=".db,.sqlite,.sqlite3" 
+                    style="display: none;" 
+                    onchange="if(this.value) { if(confirm('Atenção: Restaurar um backup substituirá TODOS os dados atuais. Deseja continuar?')) { this.form.submit(); } else { this.value=null; } }">
          </form>
      </div>
      {% endif %}
+     
     <div class="userbox">
       {% if current_user.is_authenticated %}
-        <span class="badge">{{ first_name(current_user) }}</span>
+        <div class="user-info">
+          <span class="badge">{{ first_name(current_user) }}</span>
+        </div>
         <form method="post" action="{{ url_for('users.logout') }}" style="margin:0">
-          <button class="nav-item logout-button" type="submit" style="width: 100%; justify-content: center;">
+          <button class="nav-item logout-button" type="submit">
             <i data-feather="log-out" class="icon"></i>
             <span class="nav-text">Sair</span>
           </button>
         </form>
       {% else %}
-        <a class="nav-item" href="{{ url_for('users.login') }}"><i data-feather="log-in" class="icon"></i><span class="nav-text">Entrar</span></a>
+        <a class="nav-item" href="{{ url_for('users.login') }}">
+          <i data-feather="log-in" class="icon"></i>
+          <span class="nav-text">Entrar</span>
+        </a>
       {% endif %}
     </div>
   </aside>
@@ -54,7 +101,11 @@
       <button id="sb-toggle" class="hamburger" title="Alternar menu">
          <i data-feather="menu" class="icon"></i>
       </button>
-      <div class="topbar-title">RoutineUp</div>
+      
+      <a href="{{ url_or('hub.index', url_or('tasks.index', url_for('users.login'))) }}" class="topbar-title-link">
+        <div class="topbar-title">RoutineUp</div>
+      </a>
+      
       <div class="topbar-actions">
           {% if current_user.is_authenticated and has_endpoint('profile.index') %}
               {% set avatar_path = 'uploads/avatars/' ~ current_user.avatar_filename if current_user.avatar_filename else 'img/default-avatar.png' %}
@@ -69,16 +120,182 @@
           {% endif %}
       </div>
     </header>
+    
     <main class="content">
        {% with msgs = get_flashed_messages(with_categories=true) %}
          {% include "_partials/flash.html" ignore missing %}
          {% if not template_included and msgs %}
-             {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+             {% for cat, msg in msgs %}
+             <div class="flash {{ cat }}">{{ msg }}</div>
+             {% endfor %}
          {% endif %}
       {% endwith %}
       {% block content %}{% endblock %}
     </main>
   </div>
+
+  <style>
+    /* Seções da sidebar com espaçamento adequado */
+    .sidebar-section {
+      margin-bottom: 24px;
+    }
+    
+    .sidebar-section.backup-restore {
+      margin-top: auto;
+      margin-bottom: 16px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    /* Labels de seção */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px 12px 16px;
+      color: #64748b;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .section-label .icon-xs {
+      width: 14px;
+      height: 14px;
+      opacity: 0.7;
+    }
+    
+    /* Nav items com espaçamento */
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 0 12px;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+      background: transparent;
+      border: 1px solid transparent;
+      width: 100%;
+    }
+    
+    /* Backup actions com espaçamento */
+    .backup-action {
+      margin-bottom: 6px;
+      padding: 0 12px;
+    }
+    
+    .backup-action:last-child {
+      margin-bottom: 0;
+    }
+    
+    .backup-action .nav-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .backup-action .nav-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: translateX(4px);
+    }
+    
+    /* Userbox com espaçamento */
+    .userbox {
+      padding: 12px;
+      margin-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 20px;
+    }
+    
+    .user-info {
+      margin-bottom: 12px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .user-info .badge {
+      font-weight: 600;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+    }
+    
+    .logout-button {
+      background: rgba(239, 68, 68, 0.1) !important;
+      border: 1px solid rgba(239, 68, 68, 0.2) !important;
+      color: #fca5a5 !important;
+      transition: all 0.2s ease;
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .logout-button:hover {
+      background: rgba(239, 68, 68, 0.2) !important;
+      border-color: rgba(239, 68, 68, 0.4) !important;
+      transform: translateX(0) !important;
+    }
+    
+    /* Topbar title - sem sublinhado e com estilo de logo */
+    .topbar-title-link {
+      text-decoration: none !important;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+    }
+    
+    .topbar-title-link:hover {
+      opacity: 0.85;
+      transform: scale(1.02);
+    }
+    
+    .topbar-title-link .topbar-title {
+      cursor: pointer;
+      text-decoration: none !important;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: inherit;
+    }
+    
+    /* Remove qualquer sublinhado de links */
+    a.topbar-title-link,
+    a.topbar-title-link:hover,
+    a.topbar-title-link:focus,
+    a.topbar-title-link:active {
+      text-decoration: none !important;
+    }
+    
+    /* Ajustes responsivos */
+    @media (max-width: 768px) {
+      .section-label {
+        font-size: 0.65rem;
+        padding: 0 12px 10px 12px;
+      }
+      
+      .nav {
+        gap: 4px;
+        padding: 0 8px;
+      }
+      
+      .nav-item {
+        padding: 10px 12px;
+      }
+      
+      .backup-action {
+        padding: 0 8px;
+      }
+    }
+  </style>
 
   <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   <script src="{{ url_for('static', filename='js/nav.js') }}"></script>

@@ -1,162 +1,704 @@
 ﻿{% extends "base.html" %}
-{% block title %}Tarefas{% endblock %} {# Bloco title fechado aqui #}
+{% block title %}Tarefas · RoutineUp{% endblock %}
 
-{% block content %} {# Bloco content iniciado #}
-<div class="card">
-  <h2 class="card-title">
-      <i data-feather="check-square" class="icon"></i>
-      Minhas Tarefas
-  </h2>
-
-  {# Controles de Filtro e Ordenação #}
-  <div class="task-controls">
-      <div class="control-group">
-          <span>Mostrar:</span>
-          <a href="{{ url_for('tasks.index', sort=current_sort, filter='pending') }}"
-             class="btn sm ghost {{ 'active' if current_filter == 'pending' else '' }}">Pendentes</a>
-          <a href="{{ url_for('tasks.index', sort=current_sort, filter='done') }}"
-             class="btn sm ghost {{ 'active' if current_filter == 'done' else '' }}">Concluídas</a>
-          <a href="{{ url_for('tasks.index', sort=current_sort, filter='all') }}"
-             class="btn sm ghost {{ 'active' if current_filter == 'all' else '' }}">Todas</a>
+{% block content %}
+<div class="page-premium">
+  
+  <!-- Page Header -->
+  <div class="page-header-premium">
+    <div class="page-title-section">
+      <div class="page-icon-wrapper">
+        <i data-feather="check-square" class="page-icon"></i>
       </div>
-      <div class="control-group">
-          <span>Ordenar por:</span>
-          <a href="{{ url_for('tasks.index', filter=current_filter, sort='priority') }}"
-             class="btn sm ghost {{ 'active' if current_sort == 'priority' else '' }}">Prioridade</a>
-          <a href="{{ url_for('tasks.index', filter=current_filter, sort='due_date') }}"
-             class="btn sm ghost {{ 'active' if current_sort == 'due_date' else '' }}">Prazo</a>
-          <a href="{{ url_for('tasks.index', filter=current_filter, sort='created') }}"
-             class="btn sm ghost {{ 'active' if current_sort == 'created' else '' }}">Criação</a>
+      <div>
+        <h1 class="page-title-premium">Minhas Tarefas</h1>
+        <p class="page-subtitle">Organize e priorize suas atividades</p>
       </div>
+    </div>
+    
+    <button onclick="document.getElementById('add-task-modal').showModal()" class="btn-action-primary">
+      <i data-feather="plus-circle" class="icon"></i>
+      <span>Nova Tarefa</span>
+    </button>
   </div>
 
-  {# Formulário de Adição #}
-  <details style="margin-bottom:16px" {% if not tasks and current_filter != 'all' %}open{% endif %}>
-    <summary class="btn" style="display:inline-block; cursor:pointer;">Adicionar Nova Tarefa</summary>
-    <div style="margin-top:12px; border-top: 1px solid var(--bd); padding-top: 16px;">
-      {% set task = None %}
-      {% set submit_label = "Adicionar Tarefa" %}
-      {% set form_action = url_for('tasks.add') %}
-      {% include "tasks/_form.html" %}
-    </div>
-  </details>
-
-  {# Lista de Tarefas #}
-  {% if tasks %}
-    <div class="list" id="task-list">
-      {% for t in tasks %} {# Loop iniciado #}
-        <div class="list-item" id="task-{{ t.id }}" style="align-items: flex-start; gap: 12px;">
-          <button class="btn sm task-toggle-btn {{ 'secondary' if t.done else 'ghost' }}"
-                  title="{{ 'Desfazer' if t.done else 'Concluir' }}"
-                  data-task-id="{{ t.id }}"
-                  data-toggle-url="{{ url_for('tasks.api_toggle', task_id=t.id) }}"
-                  style="margin-top: 4px;">
-            <i data-feather="{{ 'rotate-ccw' if t.done else 'check' }}" class="icon" style="width: 1em; height: 1em;"></i>
-          </button>
-
-          <div class="grow task-details {{ 'task-done' if t.done else '' }}" style="flex:1;">
-            <div class="strong task-title" style="font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
-              <span class="priority-indicator priority-{{ t.priority }}" title="Prioridade: {{ 'Alta' if t.priority == 2 else ('Média' if t.priority == 1 else 'Baixa') }}"></span>
-              {{ t.title }}
-            </div>
-            {% if t.description %}
-              <p class="muted small task-description" style="margin:4px 0 0 0; white-space: pre-wrap;">{{ t.description }}</p>
-            {% endif %}
-            {% if t.due_date or t.completed_at %} {# Verifica se há prazo OU data de conclusão #}
-              {% set due_date_info = format_due_date(t.due_date, t.done, t.completed_at) %}
-              <small class="task-due-date {{ due_date_info.class }}" style="display: block; margin-top: 4px;">
-                {{ due_date_info.text }}
-              </small>
-            {% endif %}
-          </div>
-
-          <div class="row gap" style="padding-top: 4px;">
-            <a href="{{ url_for('tasks.edit', task_id=t.id) }}" class="btn sm secondary" title="Editar">
-                <i data-feather="edit-2" class="icon" style="width: 1em; height: 1em;"></i>
-            </a>
-          </div>
-        </div> {# Fim de .list-item #}
-      {% endfor %} {# <<<<<<< CORREÇÃO: ENDFOR ADICIONADO #} {# <- Comentário Fechado Corretamente #}
-    </div> {# Fim de .list #}
-  {% else %}
-      {# Empty State #}
-      <div class="empty-state">
-        <i data-feather="list" class="icon"></i>
-        <h3>Nenhuma Tarefa Encontrada</h3>
-        {% if current_filter == 'pending' %}
-          <p>Não há tarefas pendentes. Bom trabalho ou adicione uma nova!</p>
-        {% elif current_filter == 'done' %}
-           <p>Nenhuma tarefa concluída ainda. Marque uma como feita!</p>
-        {% else %}
-           <p>Parece que não há tarefas aqui. Adicione uma nova tarefa usando o botão acima!</p>
-        {% endif %} {# Fim do if current_filter #}
+  <!-- Filters & Controls -->
+  <div class="controls-premium">
+    <div class="filter-group">
+      <span class="filter-label">Mostrar:</span>
+      <div class="filter-pills">
+        <a href="{{ url_for('tasks.index', sort=current_sort, filter='pending') }}"
+           class="filter-pill {{ 'active' if current_filter == 'pending' else '' }}">
+          <i data-feather="clock" class="icon-xs"></i>
+          Pendentes
+        </a>
+        <a href="{{ url_for('tasks.index', sort=current_sort, filter='done') }}"
+           class="filter-pill {{ 'active' if current_filter == 'done' else '' }}">
+          <i data-feather="check-circle" class="icon-xs"></i>
+          Concluídas
+        </a>
+        <a href="{{ url_for('tasks.index', sort=current_sort, filter='all') }}"
+           class="filter-pill {{ 'active' if current_filter == 'all' else '' }}">
+          <i data-feather="list" class="icon-xs"></i>
+          Todas
+        </a>
       </div>
-  {% endif %} {# Fim do if tasks #}
+    </div>
+    
+    <div class="sort-group">
+      <span class="filter-label">Ordenar:</span>
+      <div class="filter-pills">
+        <a href="{{ url_for('tasks.index', filter=current_filter, sort='priority') }}"
+           class="filter-pill {{ 'active' if current_sort == 'priority' else '' }}">
+          <i data-feather="zap" class="icon-xs"></i>
+          Prioridade
+        </a>
+        <a href="{{ url_for('tasks.index', filter=current_filter, sort='due_date') }}"
+           class="filter-pill {{ 'active' if current_sort == 'due_date' else '' }}">
+          <i data-feather="calendar" class="icon-xs"></i>
+          Prazo
+        </a>
+        <a href="{{ url_for('tasks.index', filter=current_filter, sort='created') }}"
+           class="filter-pill {{ 'active' if current_sort == 'created' else '' }}">
+          <i data-feather="clock" class="icon-xs"></i>
+          Recentes
+        </a>
+      </div>
+    </div>
+  </div>
 
-</div> {# Fim de .card #}
-{% endblock %} {# Fim do block content #}
+  <!-- Tasks List -->
+  {% if tasks %}
+  <div class="tasks-grid" id="task-list">
+    {% for t in tasks %}
+    <div class="task-card-premium {{ 'done' if t.done else '' }}" id="task-{{ t.id }}">
+      
+      <!-- Priority Indicator -->
+      <div class="task-priority-bar priority-{{ t.priority }}"></div>
+      
+      <!-- Task Header -->
+      <div class="task-header-premium">
+        <button class="task-checkbox {{ 'checked' if t.done else '' }}"
+                data-task-id="{{ t.id }}"
+                data-toggle-url="{{ url_for('tasks.api_toggle', task_id=t.id) }}"
+                title="{{ 'Desfazer' if t.done else 'Concluir' }}">
+          <i data-feather="{{ 'check' if t.done else 'circle' }}" class="icon"></i>
+        </button>
+        
+        <div class="task-content-premium">
+          <h3 class="task-title-premium {{ 'completed' if t.done else '' }}">{{ t.title }}</h3>
+          {% if t.description %}
+          <p class="task-description-premium">{{ t.description[:100] }}{{ '...' if t.description|length > 100 else '' }}</p>
+          {% endif %}
+        </div>
+      </div>
 
-{% block scripts %} {# Bloco scripts iniciado #}
+      <!-- Task Meta -->
+      <div class="task-meta-premium">
+        {% if t.due_date or t.completed_at %}
+        <div class="task-date-badge">
+          {% set due_info = format_due_date(t.due_date, t.done, t.completed_at) %}
+          <i data-feather="calendar" class="icon-xs"></i>
+          <span class="{{ due_info.class }}">{{ due_info.text }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="task-actions-premium">
+          <a href="{{ url_for('tasks.edit', task_id=t.id) }}" 
+             class="task-action-btn" 
+             title="Editar">
+            <i data-feather="edit-2" class="icon"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state-large">
+    <div class="empty-illustration">
+      <i data-feather="check-square" class="icon-huge"></i>
+    </div>
+    <h2>Nenhuma Tarefa Encontrada</h2>
+    {% if current_filter == 'pending' %}
+    <p>Parabéns! Não há tarefas pendentes.</p>
+    {% elif current_filter == 'done' %}
+    <p>Nenhuma tarefa concluída ainda.</p>
+    {% else %}
+    <p>Comece criando sua primeira tarefa!</p>
+    {% endif %}
+    <button onclick="document.getElementById('add-task-modal').showModal()" class="btn-action-primary">
+      <i data-feather="plus-circle" class="icon"></i>
+      Nova Tarefa
+    </button>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Add Task Modal -->
+<dialog id="add-task-modal" class="modal-premium">
+  <div class="modal-header">
+    <h2>Nova Tarefa</h2>
+    <button onclick="this.closest('dialog').close()" class="modal-close">
+      <i data-feather="x"></i>
+    </button>
+  </div>
+  
+  <form method="post" action="{{ url_for('tasks.add') }}" class="modal-form">
+    <div class="form-field">
+      <label for="title">Título</label>
+      <input type="text" id="title" name="title" class="input-premium" placeholder="Ex: Finalizar relatório..." required autofocus>
+    </div>
+    
+    <div class="form-field">
+      <label for="description">Descrição (opcional)</label>
+      <textarea id="description" name="description" class="input-premium" rows="3" placeholder="Detalhes adicionais..."></textarea>
+    </div>
+    
+    <div class="form-row-2">
+      <div class="form-field">
+        <label for="due_date">Prazo</label>
+        <input type="date" id="due_date" name="due_date" class="input-premium">
+      </div>
+      
+      <div class="form-field">
+        <label for="priority">Prioridade</label>
+        <select id="priority" name="priority" class="input-premium">
+          <option value="0">🟢 Baixa</option>
+          <option value="1" selected>🟡 Média</option>
+          <option value="2">🔴 Alta</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button type="submit" class="btn-primary">
+        <i data-feather="plus" class="icon"></i>
+        Criar Tarefa
+      </button>
+      <button type="button" onclick="this.closest('dialog').close()" class="btn-ghost">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<style>
+/* Page Premium */
+.page-premium {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-header-premium {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.page-title-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #8B5CF6, #6366f1);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.page-icon {
+  width: 30px;
+  height: 30px;
+  color: white;
+}
+
+.page-title-premium {
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0;
+  color: #e5e7eb;
+}
+
+.page-subtitle {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  margin: 4px 0 0 0;
+}
+
+.btn-action-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #8B5CF6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.btn-action-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.5);
+}
+
+/* Controls */
+.controls-premium {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.filter-group, .sort-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.filter-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.filter-pill:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: #a78bfa;
+  text-decoration: none;
+}
+
+.filter-pill.active {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(99, 102, 241, 0.2));
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #a78bfa;
+}
+
+.icon-xs {
+  width: 14px;
+  height: 14px;
+}
+
+/* Tasks Grid */
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.task-card-premium {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(147, 197, 253, 0.12);
+  border-radius: 16px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.task-card-premium:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.task-card-premium.done {
+  opacity: 0.7;
+}
+
+.task-priority-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.task-priority-bar.priority-0 { background: #10b981; }
+.task-priority-bar.priority-1 { background: #f59e0b; }
+.task-priority-bar.priority-2 { background: #ef4444; }
+
+.task-header-premium {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.task-checkbox {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 2px solid rgba(139, 92, 246, 0.4);
+  border-radius: 10px;
+  background: rgba(139, 92, 246, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.task-checkbox:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.6);
+}
+
+.task-checkbox.checked {
+  background: linear-gradient(135deg, #8B5CF6, #6366f1);
+  border-color: #8B5CF6;
+}
+
+.task-checkbox .icon {
+  width: 20px;
+  height: 20px;
+  color: #a78bfa;
+}
+
+.task-checkbox.checked .icon {
+  color: white;
+}
+
+.task-content-premium {
+  flex: 1;
+}
+
+.task-title-premium {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #e5e7eb;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+}
+
+.task-title-premium.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.task-description-premium {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.task-meta-premium {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.task-date-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.task-actions-premium {
+  display: flex;
+  gap: 6px;
+}
+
+.task-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.task-action-btn:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #a78bfa;
+  text-decoration: none;
+}
+
+.task-action-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Empty State */
+.empty-state-large {
+  text-align: center;
+  padding: 80px 40px;
+}
+
+.empty-illustration {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(79, 70, 229, 0.1));
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-huge {
+  width: 64px;
+  height: 64px;
+  color: #8B5CF6;
+}
+
+.empty-state-large h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #e5e7eb;
+  margin: 0 0 12px 0;
+}
+
+.empty-state-large p {
+  font-size: 1.1rem;
+  color: #94a3b8;
+  margin: 0 0 32px 0;
+}
+
+/* Modal */
+.modal-premium {
+  max-width: 600px;
+  width: 90%;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+}
+
+.modal-premium::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #e5e7eb;
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.modal-form {
+  padding: 28px;
+}
+
+.form-field {
+  margin-bottom: 20px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-bottom: 8px;
+}
+
+.input-premium {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #e5e7eb;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.input-premium:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(139, 92, 246, 0.5);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #8B5CF6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.btn-ghost {
+  padding: 12px 24px;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+}
+
+@media (max-width: 768px) {
+  .page-header-premium {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .controls-premium {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .tasks-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
 <script>
-  // Ativa Feather Icons
-  feather.replace();
+feather.replace();
 
-  // --- JAVASCRIPT PARA TOGGLE AJAX ---
-  document.addEventListener('DOMContentLoaded', () => {
-    const taskList = document.getElementById('task-list');
-
-    if (taskList) {
-      taskList.addEventListener('click', async (event) => {
-        const toggleButton = event.target.closest('.task-toggle-btn');
-        if (!toggleButton) return;
-        event.preventDefault();
-        const taskId = toggleButton.dataset.taskId;
-        const toggleUrl = toggleButton.dataset.toggleUrl;
-        const listItem = document.getElementById(`task-${taskId}`);
-        const taskDetails = listItem ? listItem.querySelector('.task-details') : null;
-        const dateElement = listItem ? listItem.querySelector('.task-due-date') : null;
-        const iconElement = toggleButton.querySelector('i.icon');
-        if (!taskId || !toggleUrl || !listItem || !taskDetails || !iconElement) { console.error('Erro AJAX Toggle: Elementos não encontrados.'); return; }
-        toggleButton.disabled = true;
-        try {
-          const response = await fetch(toggleUrl, { method: 'POST', headers: {'Accept': 'application/json'} });
-          if (!response.ok) throw new Error(`Erro: ${response.statusText}`);
-          const result = await response.json();
-          if (result.success) {
-            const newState = result.new_state;
-            taskDetails.classList.toggle('task-done', newState);
-            toggleButton.classList.toggle('ghost', !newState);
-            toggleButton.classList.toggle('secondary', newState);
-            toggleButton.title = newState ? 'Desfazer' : 'Concluir';
-            const newIconName = newState ? 'rotate-ccw' : 'check';
-            // Atualiza o SVG do ícone diretamente
-             const svgString = feather.icons[newIconName].toSvg({'class': 'icon', 'style': 'width: 1em; height: 1em;'});
-             // Encontra o elemento SVG dentro do <i> e substitui, ou substitui o innerHTML do <i>
-             const existingSvg = iconElement.querySelector('svg');
-             if (existingSvg) {
-                 existingSvg.outerHTML = svgString;
-             } else {
-                 iconElement.innerHTML = svgString; // Fallback
-             }
-
-
-            if (dateElement) {
-                // Atualiza o texto e a classe com os dados da API
-                dateElement.textContent = result.new_date_text || '';
-                // Limpa classes de cor antigas
-                dateElement.classList.remove('due-date-default', 'due-date-future', 'due-date-done', 'due-date-overdue', 'due-date-today', 'due-date-soon');
-                // Adiciona a nova classe correta
-                if (result.new_date_class) {
-                    dateElement.classList.add(result.new_date_class);
-                }
-            }
-            // REMOVIDO: window.location.reload();
-
-          } else { alert(`Erro: ${result.error || 'Não foi possível atualizar.'}`); }
-        } catch (error) { console.error('Erro Fetch:', error); alert('Erro de comunicação.');
-        } finally { toggleButton.disabled = false; }
-      });
+// Toggle task via AJAX
+document.querySelectorAll('.task-checkbox').forEach(btn => {
+  btn.addEventListener('click', async function() {
+    const taskId = this.dataset.taskId;
+    const url = this.dataset.toggleUrl;
+    
+    try {
+      const response = await fetch(url, { method: 'POST' });
+      const result = await response.json();
+      
+      if (result.success) {
+        this.classList.toggle('checked');
+        const card = document.getElementById(`task-${taskId}`);
+        card.classList.toggle('done');
+        
+        const title = card.querySelector('.task-title-premium');
+        title.classList.toggle('completed');
+        
+        // Update icon
+        const icon = this.querySelector('i');
+        icon.setAttribute('data-feather', result.new_state ? 'check' : 'circle');
+        feather.replace();
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
   });
+});
 </script>
-{% endblock %} {# Fim do block scripts #}
+{% endblock %}

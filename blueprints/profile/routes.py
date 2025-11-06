@@ -1,109 +1,125 @@
-from flask import render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename # Para uploads seguros
-import os # Para manipulação de ficheiros/pastas
+from werkzeug.utils import secure_filename
 from datetime import datetime
+import os
 from extensions import db
-from . import profile_bp
+from models import User
 
-# Configurações de Upload (podem ir para config.py se preferir)
+bp = Blueprint('profile', __name__, url_prefix='/profile')
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-UPLOAD_FOLDER = 'static/uploads/avatars' # Relativo à raiz da aplicação
+MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB
 
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@profile_bp.get("/")
+@bp.route('/')
 @login_required
 def index():
-    # Constrói URL do avatar (ou None se não existir)
+    # Construir URL do avatar
     avatar_url = None
     if current_user.avatar_filename:
-        avatar_url = url_for('static', filename=os.path.join('uploads/avatars', current_user.avatar_filename).replace("\\", "/"))
+        avatar_url = url_for('static', filename=f'uploads/avatars/{current_user.avatar_filename}')
+    
     return render_template("profile/index.html", user=current_user, avatar_url=avatar_url)
 
-@profile_bp.post("/update-details")
+@bp.route('/update-details', methods=['POST'])
 @login_required
 def update_details():
-    name = (request.form.get("name") or "").strip()
-    birth_date_raw = (request.form.get("birth_date") or "").strip()
-    gender = (request.form.get("gender") or "").strip() or None
-    file = request.files.get('avatar') # Obter ficheiro do formulário
-
-    # --- Validações (Nome, Data, Género - como antes) ---
-    if not name or len(name) < 2:
-        flash("Informe um nome válido.", "error")
-        return redirect(url_for("profile.index"))
-    birth_date = current_user.birth_date
-    if birth_date_raw:
-        try: birth_date = datetime.strptime(birth_date_raw, "%Y-m-%d").date()
-        except ValueError: flash("Data de nascimento inválida.", "error"); return redirect(url_for("profile.index"))
-    elif current_user.birth_date is not None: birth_date = None
-    valid_genders = [None, "", "feminino", "masculino", "outro"] # Adicionado ""
-    if gender not in valid_genders: gender = None
-    # --- Fim Validações ---
-
-    # --- Processamento do Avatar ---
-    avatar_changed = False
-    if file and file.filename != '':
-        if allowed_file(file.filename):
-            # Criar nome de ficheiro seguro e único (user_id + extensão)
-            filename = f"{current_user.id}.{file.filename.rsplit('.', 1)[1].lower()}"
-            # Caminho completo para guardar
-            upload_path = os.path.join(current_app.root_path, UPLOAD_FOLDER)
-            # Criar pasta se não existir
-            os.makedirs(upload_path, exist_ok=True)
-            filepath = os.path.join(upload_path, filename)
-
-            # Apagar avatar antigo se existir um diferente
-            if current_user.avatar_filename and current_user.avatar_filename != filename:
-                 old_filepath = os.path.join(upload_path, current_user.avatar_filename)
-                 if os.path.exists(old_filepath):
-                     try: os.remove(old_filepath)
-                     except OSError as e: print(f"Erro ao apagar avatar antigo: {e}")
-
-            # Salvar o novo ficheiro
+    try:
+        # Atualizar informações pessoais
+        name = request.form.get('name', '').strip()
+        if name and len(name) >= 2:
+            current_user.name = name
+        
+        birth_date_str = request.form.get('birth_date', '').strip()
+        if birth_date_str:
             try:
-                file.save(filepath)
-                current_user.avatar_filename = filename # Guarda SÓ o nome do ficheiro
-                avatar_changed = True
-            except Exception as e:
-                 flash(f"Erro ao guardar a foto: {e}", "error")
-                 return redirect(url_for("profile.index"))
-        else:
-            flash("Tipo de ficheiro de foto inválido. Use png, jpg, jpeg, gif, webp.", "error")
-            return redirect(url_for("profile.index"))
-    # --- Fim Processamento Avatar ---
+                current_user.birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                flash('Data de nascimento inválida.', 'warning')
+        
+        gender = request.form.get('gender', '').strip()
+        if gender in ['', 'feminino', 'masculino', 'outro']:
+            current_user.gender = gender if gender else None
+        
+        # Processar upload de avatar se houver
+        if 'avatar' in request.files:
+            file = request.files['avatar']
+            if file and file.filename and allowed_file(file.filename):
+                # Verificar tamanho do arquivo
+                file.seek(0, os.SEEK_END)
+                file_size = file.tell()
+                file.seek(0)
+                
+                if file_size > MAX_FILE_SIZE:
+                    flash('Arquivo muito grande. Tamanho máximo: 2MB.', 'warning')
+                else:
+                    # Gerar nome único para o arquivo
+                    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                    ext = secure_filename(file.filename).rsplit('.', 1)[1].lower()
+                    filename = f"user_{current_user.id}_{timestamp}.{ext}"
+                    
+                    # Criar diretório se não existir
+                    upload_folder = os.path.join(current_app.static_folder, 'uploads', 'avatars')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    
+                    # Remover avatar anterior se existir
+                    if current_user.avatar_filename:
+                        old_path = os.path.join(upload_folder, current_user.avatar_filename)
+                        if os.path.exists(old_path):
+                            try:
+                                os.remove(old_path)
+                            except Exception:
+                                pass  # Ignorar erro ao deletar arquivo antigo
+                    
+                    # Salvar novo avatar
+                    filepath = os.path.join(upload_folder, filename)
+                    file.save(filepath)
+                    current_user.avatar_filename = filename
+                    flash('Foto de perfil atualizada!', 'success')
+        
+        db.session.commit()
+        flash('Detalhes atualizados com sucesso!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao atualizar perfil: {str(e)}', 'danger')
+    
+    return redirect(url_for('profile.index'))
 
-
-    # Atualizar dados do utilizador
-    current_user.name = name
-    current_user.birth_date = birth_date
-    current_user.gender = gender
-    # avatar_filename já foi atualizado se houve upload bem-sucedido
-
-    db.session.commit()
-    flash("Detalhes atualizados com sucesso.", "info")
-    return redirect(url_for("profile.index"))
-
-# Rota update_password permanece igual
-@profile_bp.post("/update-password")
+@bp.route('/update-password', methods=['POST'])
 @login_required
 def update_password():
-    current_password = request.form.get("current_password") or ""
-    new_password = request.form.get("new_password") or ""
-    confirm_password = request.form.get("confirm_password") or ""
-
-    if not check_password_hash(current_user.password_hash, current_password):
-        flash("Senha atual incorreta.", "error"); return redirect(url_for("profile.index"))
+    current_password = request.form.get('current_password', '')
+    new_password = request.form.get('new_password', '')
+    confirm_password = request.form.get('confirm_password', '')
+    
+    # Validações
+    if not current_password or not new_password or not confirm_password:
+        flash('Preencha todos os campos de senha.', 'danger')
+        return redirect(url_for('profile.index'))
+    
+    if not check_password_hash(current_user.password, current_password):
+        flash('Senha atual incorreta.', 'danger')
+        return redirect(url_for('profile.index'))
+    
     if len(new_password) < 6:
-        flash("A nova senha deve ter pelo menos 6 caracteres.", "error"); return redirect(url_for("profile.index"))
+        flash('A nova senha deve ter pelo menos 6 caracteres.', 'danger')
+        return redirect(url_for('profile.index'))
+    
     if new_password != confirm_password:
-        flash("A nova senha e a confirmação não coincidem.", "error"); return redirect(url_for("profile.index"))
-
-    current_user.password_hash = generate_password_hash(new_password)
-    db.session.commit()
-    flash("Senha atualizada com sucesso.", "info")
-    return redirect(url_for("profile.index"))
+        flash('As senhas não coincidem.', 'danger')
+        return redirect(url_for('profile.index'))
+    
+    try:
+        current_user.password = generate_password_hash(new_password)
+        db.session.commit()
+        flash('Senha alterada com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Erro ao alterar senha: {str(e)}', 'danger')
+    
+    return redirect(url_for('profile.index'))
