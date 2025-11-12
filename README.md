@@ -420,9 +420,9 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 **Diogo Abreu**
 
-- GitHub: [@diogoabreu](https://github.com/diogoabreu)
-- LinkedIn: [Diogo Abreu](https://linkedin.com/in/diogoabreu)
-- Email: contato@diogoabreu.dev
+- GitHub: [@diogoabreu](https://github.com/DiogoAbreu07)
+- LinkedIn: [Diogo Abreu](https://linkedin.com/in/diogoabreuu)
+- Email: abreudiogo800@gmail.com
 
 ---
 
