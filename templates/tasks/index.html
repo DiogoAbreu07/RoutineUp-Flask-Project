@@ -104,11 +104,11 @@
         {% endif %}
         
         <div class="task-actions-premium">
-          <a href="{{ url_for('tasks.edit', task_id=t.id) }}" 
-             class="task-action-btn" 
-             title="Editar">
+          <button onclick="openEditModal({{ t.id }}, '{{ t.title|replace("'", "\\'") }}', '{{ (t.description|replace("'", "\\'")) if t.description else '' }}', '{{ t.due_date if t.due_date else '' }}', {{ t.priority }})" 
+                  class="task-action-btn" 
+                  title="Editar">
             <i data-feather="edit-2" class="icon"></i>
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -176,6 +176,60 @@
       <button type="submit" class="btn-primary">
         <i data-feather="plus" class="icon"></i>
         Criar Tarefa
+      </button>
+      <button type="button" onclick="this.closest('dialog').close()" class="btn-ghost">
+        Cancelar
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Edit Task Modal -->
+<dialog id="edit-task-modal" class="modal-premium">
+  <div class="modal-header">
+    <h2>Editar Tarefa</h2>
+    <button onclick="this.closest('dialog').close()" class="modal-close">
+      <i data-feather="x"></i>
+    </button>
+  </div>
+  
+  <form method="post" id="edit-task-form" class="modal-form">
+    <input type="hidden" id="edit-task-id" name="task_id">
+    
+    <div class="form-field">
+      <label for="edit-title">Título</label>
+      <input type="text" id="edit-title" name="title" class="input-premium" placeholder="Ex: Finalizar relatório..." required>
+    </div>
+    
+    <div class="form-field">
+      <label for="edit-description">Descrição (opcional)</label>
+      <textarea id="edit-description" name="description" class="input-premium" rows="3" placeholder="Detalhes adicionais..."></textarea>
+    </div>
+    
+    <div class="form-row-2">
+      <div class="form-field">
+        <label for="edit-due_date">Prazo</label>
+        <input type="date" id="edit-due_date" name="due_date" class="input-premium">
+      </div>
+      
+      <div class="form-field">
+        <label for="edit-priority">Prioridade</label>
+        <select id="edit-priority" name="priority" class="input-premium">
+          <option value="0">🟢 Baixa</option>
+          <option value="1">🟡 Média</option>
+          <option value="2">🔴 Alta</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button type="submit" class="btn-primary">
+        <i data-feather="check" class="icon"></i>
+        Atualizar Tarefa
+      </button>
+      <button type="button" onclick="deleteTask()" class="btn-danger-outline">
+        <i data-feather="trash-2" class="icon"></i>
+        Excluir
       </button>
       <button type="button" onclick="this.closest('dialog').close()" class="btn-ghost">
         Cancelar
@@ -462,6 +516,7 @@
   justify-content: center;
   color: #94a3b8;
   text-decoration: none;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
@@ -607,10 +662,12 @@
   display: flex;
   gap: 12px;
   margin-top: 28px;
+  flex-wrap: wrap;
 }
 
 .btn-primary {
   flex: 1;
+  min-width: 150px;
   padding: 12px 24px;
   background: linear-gradient(135deg, #8B5CF6, #6366f1);
   color: white;
@@ -628,6 +685,25 @@
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+}
+
+.btn-danger-outline {
+  padding: 12px 24px;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-danger-outline:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 .btn-ghost {
@@ -663,6 +739,14 @@
   
   .form-row-2 {
     grid-template-columns: 1fr;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .btn-primary {
+    width: 100%;
   }
 }
 </style>
@@ -700,5 +784,36 @@ document.querySelectorAll('.task-checkbox').forEach(btn => {
     }
   });
 });
+
+// Abrir modal de edição com dados da tarefa
+function openEditModal(id, title, description, dueDate, priority) {
+  document.getElementById('edit-task-id').value = id;
+  document.getElementById('edit-title').value = title;
+  document.getElementById('edit-description').value = description || '';
+  document.getElementById('edit-due_date').value = dueDate || '';
+  document.getElementById('edit-priority').value = priority;
+  
+  // Atualizar a action do formulário
+  const form = document.getElementById('edit-task-form');
+  form.action = `/tasks/edit/${id}`;
+  
+  // Abrir o modal
+  document.getElementById('edit-task-modal').showModal();
+  
+  // Atualizar ícones
+  setTimeout(() => feather.replace(), 50);
+}
+
+// Excluir tarefa
+function deleteTask() {
+  if (confirm('⚠️ Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.')) {
+    const taskId = document.getElementById('edit-task-id').value;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/tasks/delete/${taskId}`;
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
 </script>
 {% endblock %}

@@ -50,9 +50,6 @@
     <button class="btn btn-primary" type="submit">{{ submit_label or 'Salvar' }}</button>
     <a class="btn btn-muted" href="{{ url_for('tasks.index') }}">Cancelar</a>
     {% if task %}
-      <form method="post" action="{{ url_for('tasks.delete', task_id=task.id) }}" style="display: inline-block; margin-left: 8px;">
-          <button class="btn danger" type="submit" onclick="return confirm('Tem a certeza que deseja excluir esta tarefa?');">Excluir</button>
-      </form>
     {% endif %}
   </div>
 </form>

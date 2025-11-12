@@ -10,8 +10,52 @@
 
   {# Include SIMPLES #}
   {% include "tasks/_form.html" %}
+  
+  {# Botão de Excluir - NOVO #}
+  <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+    <form method="POST" 
+          action="{{ url_for('tasks.delete', task_id=task.id) }}" 
+          onsubmit="return confirm('⚠️ Tem certeza que deseja excluir esta tarefa? Esta ação não pode ser desfeita.')">
+      <button type="submit" class="btn-danger">
+        <i data-feather="trash-2" class="icon"></i>
+        Excluir Tarefa
+      </button>
+    </form>
+  </div>
 </div>
+
+<style>
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.5);
+}
+
+.btn-danger .icon {
+  width: 18px;
+  height: 18px;
+}
+</style>
 {% endblock %}
+
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+<script>
+  // Inicializar ícones do Feather após carregar a página
+  feather.replace();
+</script>
 {% endblock %}

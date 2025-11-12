@@ -178,6 +178,46 @@
     
     <!-- Chart Section -->
     <div class="chart-section">
+      
+      <!-- Agenda - DESTAQUE PRINCIPAL -->
+      <div class="premium-card agenda-card agenda-highlight">
+        <div class="card-header-premium">
+          <i data-feather="calendar" class="header-icon"></i>
+          <div>
+            <h3 class="card-title-premium"> Agenda de Hoje</h3>
+            <p class="card-subtitle">{{ timeline_items|length }} compromisso(s) agendado(s)</p>
+          </div>
+        </div>
+        
+        {% if timeline_items %}
+        <div class="timeline-premium">
+          {% for item in timeline_items %}
+          <div class="timeline-entry">
+            <div class="timeline-marker {{ item.type }}">
+              <i data-feather="{{ 'check-square' if item.type == 'task' else 'bell' }}"></i>
+            </div>
+            <div class="timeline-time">{{ item.time.strftime('%H:%M') }}</div>
+            <div class="timeline-detail">
+              {% if item.type == 'task' %}
+                <span class="priority-dot priority-{{ item.obj.priority }}"></span>
+                <a href="{{ url_for('tasks.edit', task_id=item.obj.id) }}" class="timeline-title">{{ item.obj.title }}</a>
+              {% else %}
+                <span class="timeline-title">{{ item.obj.title }}</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state-premium">
+          <div class="empty-icon">☕</div>
+          <h4>Dia Livre!</h4>
+          <p>Nenhum compromisso agendado para hoje</p>
+        </div>
+        {% endif %}
+      </div>
+      
+      <!-- Atividade Semanal -->
       <div class="premium-card">
         <div class="card-header-premium">
           <div class="header-left">
@@ -255,44 +295,6 @@
     <!-- Timeline & Sidebar -->
     <div class="timeline-section">
       
-      <!-- Agenda -->
-      <div class="premium-card agenda-card">
-        <div class="card-header-premium">
-          <i data-feather="calendar" class="header-icon"></i>
-          <div>
-            <h3 class="card-title-premium">Agenda de Hoje</h3>
-            <p class="card-subtitle">{{ timeline_items|length }} compromisso(s)</p>
-          </div>
-        </div>
-        
-        {% if timeline_items %}
-        <div class="timeline-premium">
-          {% for item in timeline_items %}
-          <div class="timeline-entry">
-            <div class="timeline-marker {{ item.type }}">
-              <i data-feather="{{ 'check-square' if item.type == 'task' else 'bell' }}"></i>
-            </div>
-            <div class="timeline-time">{{ item.time.strftime('%H:%M') }}</div>
-            <div class="timeline-detail">
-              {% if item.type == 'task' %}
-                <span class="priority-dot priority-{{ item.obj.priority }}"></span>
-                <a href="{{ url_for('tasks.edit', task_id=item.obj.id) }}" class="timeline-title">{{ item.obj.title }}</a>
-              {% else %}
-                <span class="timeline-title">{{ item.obj.title }}</span>
-              {% endif %}
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state-premium">
-          <div class="empty-icon">☕</div>
-          <h4>Dia Livre!</h4>
-          <p>Nenhum compromisso agendado</p>
-        </div>
-        {% endif %}
-      </div>
-
       <!-- Overdue Tasks -->
       {% if atrasadas %}
       <div class="premium-card alert-card-premium">
@@ -354,6 +356,84 @@
   </div>
 
 </div>
+
+<style>
+/* Destaque especial para a agenda */
+.agenda-highlight {
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15), 0 0 0 1px rgba(139, 92, 246, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.agenda-highlight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #8B5CF6, #6366f1, #4F46E5);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.agenda-highlight .card-title-premium {
+  font-size: 1.25rem;
+  background: linear-gradient(135deg, #8B5CF6, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Melhorias nos itens da timeline */
+.timeline-entry {
+  transition: all 0.3s ease;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.timeline-entry:hover {
+  background: rgba(139, 92, 246, 0.05);
+  transform: translateX(4px);
+}
+
+.timeline-marker {
+  transition: all 0.3s ease;
+}
+
+.timeline-entry:hover .timeline-marker {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.timeline-time {
+  font-weight: 700;
+  color: #8B5CF6;
+  font-size: 0.9rem;
+}
+
+/* Animação suave no carregamento */
+.agenda-highlight {
+  animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
 {% endblock %}
 
 {% block scripts %}

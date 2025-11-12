@@ -1,10 +1,36 @@
-﻿from datetime import date, datetime, time, timedelta
+﻿# -*- coding: utf-8 -*-
+from datetime import date, datetime, time, timedelta
 from flask import render_template, jsonify
 from flask_login import login_required, current_user
 from models import Task, Goal, Reminder
 from sqlalchemy import func, and_, or_, case, extract
 from extensions import db
 from . import hub_bp
+
+def formatar_data_pt(data):
+    """Retorna a data formatada em português sem problemas de encoding"""
+    dias_semana = {
+        0: 'Segunda-feira',
+        1: 'Terça-feira',
+        2: 'Quarta-feira',
+        3: 'Quinta-feira',
+        4: 'Sexta-feira',
+        5: 'Sábado',
+        6: 'Domingo'
+    }
+    
+    meses = {
+        1: 'Janeiro', 2: 'Fevereiro', 3: 'Março',
+        4: 'Abril', 5: 'Maio', 6: 'Junho',
+        7: 'Julho', 8: 'Agosto', 9: 'Setembro',
+        10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
+    }
+    
+    dia_semana = dias_semana[data.weekday()]
+    dia = data.day
+    mes = meses[data.month]
+    
+    return f"{dia_semana}, {dia} de {mes}"
 
 @hub_bp.get("/")
 @login_required
@@ -24,7 +50,8 @@ def index():
     else: 
         greeting = "Boa noite"
     
-    today_formatted = today.strftime('%A, %d de %B')
+    # CORREÇÃO: Usar a função que não quebra com acentos
+    today_formatted = formatar_data_pt(today)
 
     # Inicializa stats com TODOS os campos necessários
     stats = {

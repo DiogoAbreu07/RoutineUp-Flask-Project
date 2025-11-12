@@ -1,9 +1,10 @@
 ﻿from . import users_bp
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta
-from extensions import db, login_manager
+from extensions import db, login_manager, mail
+from flask_mail import Message
 from models import User
 import secrets
 
@@ -120,24 +121,25 @@ def forgot_password_post():
         'expires_at': datetime.utcnow() + timedelta(hours=1)
     }
     
-    # Em produção, você enviaria um e-mail aqui
-    # Por enquanto, vamos apenas gerar o link e mostrar no flash
+    # Em produção, envie um e-mail com o link de recuperação
     reset_link = url_for('users.reset_password', token=token, _external=True)
-    
-    # TEMPORÁRIO: Mostra o link direto (em produção, envie por e-mail)
-    flash(f"Link de recuperação (TEMPORÁRIO - copie este link): {reset_link}", "success")
-    
-    # TODO: Implementar envio de e-mail real
-    # send_password_reset_email(email, reset_link)
-    
-    print(f"\n{'='*60}")
-    print(f"🔑 LINK DE RECUPERAÇÃO DE SENHA")
-    print(f"{'='*60}")
-    print(f"E-mail: {email}")
-    print(f"Link: {reset_link}")
-    print(f"Válido até: {password_reset_tokens[token]['expires_at']}")
-    print(f"{'='*60}\n")
-    
+
+    # Tenta enviar e-mail com Flask-Mail; se falhar (ex: config ausente), mostra link como fallback
+    try:
+        subject = "RoutineUp — Recuperação de senha"
+        sender = current_app.config.get('MAIL_DEFAULT_SENDER') or current_app.config.get('MAIL_USERNAME')
+        msg = Message(subject=subject, recipients=[email], sender=sender)
+        # Renderiza templates de e-mail (texto e HTML)
+        msg.body = render_template('email/password_reset.txt', reset_link=reset_link)
+        msg.html = render_template('email/password_reset.html', reset_link=reset_link)
+        mail.send(msg)
+        flash("Se o e-mail estiver cadastrado, você receberá um link de recuperação.", "info")
+    except Exception as e:
+        # Loga o erro e devolve fallback (útil em desenvolvimento)
+        current_app.logger.exception("Falha ao enviar e-mail de recuperação de senha:")
+        flash("Não foi possível enviar o e-mail de recuperação (configuração de e-mail ausente ou inválida).", "error")
+        flash(f"Link de recuperação (TEMP - copie): {reset_link}", "info")
+
     return redirect(url_for("users.login"))
 
 @users_bp.get("/reset-password/<token>")
